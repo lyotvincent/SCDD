@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import os
 
 cells = np.array([])
 genes = np.array([])
@@ -64,9 +65,16 @@ def SaveData(expName, modelName, result, needTrans=True, batch = None):
     res = result
     if needTrans:
         res = pd.DataFrame(res.transpose())
+    else:
+        res = pd.DataFrame(res)
     res.index = genes
     res.columns = cells
-    path = "results/"+modelName+"/"+expName+"_"+modelName+Batch+"_impute.tsv"
+    if os.path.isdir("results") == False:
+        os.makedirs("results")
+    dir = "results/"+ modelName
+    if os.path.isdir(dir) == False:
+        os.makedirs(dir)
+    path = dir + "/" + expName + "_" + modelName + Batch + "_impute.tsv"
     res.to_csv(path, sep='\t')
     print("Write to {0} successfully!".format(path))
 

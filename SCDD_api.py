@@ -35,7 +35,7 @@ class SCDD:
             self.Tran = True
 
     def run(self, store = False):
-        self.data, self.label = LoadData(self.name, self.raw, self.label, self.Tran)
+        self.data, self.Label = LoadData(self.name, self.raw, self.label, self.Tran)
         self.log_data = np.log(self.data + 1.01)
         A = getA(self.data, method=self.method)
         if store:
@@ -46,7 +46,7 @@ class SCDD:
             Omega, Target = get_supervise(self.log_data , dropout_rate, null_genes, M)
             SaveTargets(M, Omega, Target, dropout_rate, null_genes)
         md = SC_Denoising(self.log_data, A, Omega, Target)
-        md.train(4000)
+        md.train(2000)
         self.result = md.impute()
         self.result, self.cresult = makeup_results_all(self.result, self.log_data, null_genes, dropout_rate)
         self.result = np.exp(self.result) - 1.01 + 0.5
@@ -55,6 +55,23 @@ class SCDD:
         self.cresult = self.cresult.astype(np.int)
         SaveData(self.name, modelName, self.result, batch=self.batch)
         SaveData(self.name, modelName, self.cresult, batch=self.batch+1)
+    
+    def run_Diffusion(self, store = False):
+        self.data, self.Label = LoadData(self.name, self.raw, self.label, self.Tran)
+        self.log_data = np.log(self.data + 1.01)
+        A = getA(self.data, method=self.method)
+        if store:
+            M, Omega, Target, dropout_rate, null_genes = LoadTargets()
+        else:
+            M = RobjKmeans(self.data)
+            dropout_rate, null_genes = get_dropout_rate(self.log_data)
+            Omega, Target = get_supervise(self.log_data , dropout_rate, null_genes, M)
+            SaveTargets(M, Omega, Target, dropout_rate, null_genes)
+        self.result = Target
+        self.result = makeup_results(self.result, self.log_data, null_genes, dropout_rate)
+        self.result = np.exp(self.result) - 1.01 + 0.5
+        self.result = self.result.astype(np.int)
+        SaveData(self.name, "Diffusion", self.result)
 
 
 
