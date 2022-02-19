@@ -89,7 +89,7 @@ def Generate_Timecourse(has_results=False):
         dataPath = "data/Timecourse.raw.tsv"
         labelPath = "data/Timecourse.label.txt"
         RunComps(expName, dataPath, labelPath)
-    os.system("~/anaconda3/bin/python paper/Timecourse/Timecourse.py")
+    os.system("python3 paper/Timecourse/Timecourse.py")
     
 
 Generate_Timecourse(True)
