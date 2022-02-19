@@ -9,13 +9,13 @@ Single-cell sequencing technologies are widely used to discover the evolutionary
 
 The Python packages used in `SCDD` are in `requirements_SCDD.txt`.
 
-```
+```shell
 pip install -r requirements_SCDD.txt
 ```
 
 If your are going to generate the figures in this paper, you need to installed the Python packages in `requirements.txt`.
 
-```
+```shell
 pip install -r requirements.txt
 ```
 
@@ -23,14 +23,14 @@ pip install -r requirements.txt
 
 Run this code in R Console for `SCDD` requirements:
 
-```
+```R
 install.packages("BiocManager")
 BiocManager::install(c("SingleCellExperiment","SC3"))
 ```
 
 If your are going to generate the figures in this paper, run this code first:
 
-```
+```R
 install.packages(c("ggplot2", "ggpubr", "ROCR", "aricode", "BiocManager"))
 BiocManager::install(c("SingleCellExperiment", "SC3", "Seurat", "SeuratObject", "SAVER"))
 ```
@@ -48,4 +48,13 @@ and the Diffusion and Denoising results will be saved in the fold `results`. Or 
 from SCDD_api import *
 e = SCDD(raw="data/Timecourse.raw.tsv")
 e.run()
+```
+
+### Figures
+
+Figures are in the fold `paper`. If you are going to generate figures yourself, You can use `genereate` module in `main.py`:
+
+```python
+from generates import *
+Generate_Cellcycle()
 ```
