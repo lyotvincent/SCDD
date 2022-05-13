@@ -7,7 +7,7 @@ from SCDD_api import *
 import os
 import pandas as pd
 
-def RunComps(expName, dataPath, labelPath):
+def RunComps(expName, dataPath, labelPath=None):
     imputeByMAGIC(expName, dataPath, labelPath)
     imputeBySAVER(expName, dataPath, labelPath)
     imputeByDCA(expName, dataPath, labelPath)
@@ -90,6 +90,14 @@ def Generate_Timecourse(has_results=False):
         labelPath = "data/Timecourse.label.txt"
         RunComps(expName, dataPath, labelPath)
     os.system("~/anaconda3/bin/python paper/Timecourse/Timecourse.py")
-    
 
-Generate_Timecourse(True)
+def Generate_GUO(has_results=False):
+    if has_results == False:
+        # Timecourse
+        expName = "guo"
+        dataPath = "data/guo.raw.txt"
+        labelPath = "data/guo.label.txt"
+        RunComps(expName, dataPath, labelPath)
+    os.system("~/anaconda3/bin/python paper/guo/guo.py")
+
+Generate_GUO(True)

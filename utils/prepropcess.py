@@ -37,7 +37,7 @@ def RobjKmeans(train_data: np.array) -> np.array:
     sce<-SingleCellExperiment(assays=list(counts=tp,logcounts=tplog))
     ks<-sc3_estimate_k(sce)@metadata$sc3$k_estimation
     rowData(sce)$feature_symbol=1:dim(tp)[1]
-    t<-sc3_prepare(sce, svm_max=10000)
+    t<-sc3_prepare(sce, gene_filter = F, svm_max=10000)
     t<-sc3_calc_dists(t)
     t<-sc3_calc_transfs(t)
     t<-sc3_kmeans(t,ks=ks:ks)

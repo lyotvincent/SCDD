@@ -33,6 +33,10 @@ class SCDD:
             self.raw = "data/Timecourse.raw.tsv"
             self.label = "data/Timecourse.label.txt"
             self.Tran = True
+        elif self.name == "guo":
+            self.raw = "data/guo.raw.txt"
+            self.label = "data/guo.label.txt"
+            self.Tran = True
 
     def run(self, store = False):
         self.data, self.Label = LoadData(self.name, self.raw, self.label, self.Tran)
