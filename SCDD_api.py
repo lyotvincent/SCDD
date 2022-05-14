@@ -73,8 +73,8 @@ class SCDD:
             SaveTargets(M, Omega, Target, dropout_rate, null_genes)
         self.result = Target
         self.result = makeup_results(self.result, self.log_data, null_genes, dropout_rate)
-        self.result = np.exp(self.result) - 1.01 + 0.5
-        self.result = self.result.astype(np.int)
+        self.result = np.exp(self.result) - 1
+        self.result = np.round(self.result)
         SaveData(self.name, "Diffusion", self.result)
 
 

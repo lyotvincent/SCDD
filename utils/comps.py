@@ -63,3 +63,54 @@ def imputeBySAVER(expName, dataPath, labelPath=None):
     result = np.array(result)
     SaveData(expName, modelName, result, needTrans=False)
     print("write SAVER successfully!")
+
+# DrImpute
+def imputeByDrImpute(expName, dataPath, labelPath=None):
+    modelName = 'DrImpute'
+    X, y = LoadData(expName, dataPath, labelPath)
+    try:
+        result = robjects.r('''
+            library(DrImpute)
+            library(SummarizedExperiment)
+            library(scDatasets)
+            library(Matrix)
+            raw <- read.table("%s", header=TRUE, sep="\t")
+            rownames(raw) <- raw[,1]
+            raw <- raw[, -1]
+            raw <- Matrix(as.matrix(raw))
+            raw.log <- log(raw + 1)
+            set.seed(1)
+            result <- DrImpute(raw.log, mc.cores = 7)
+            result <- exp(result) - 1
+            return(result)
+            ''' % (dataPath))
+        result = np.array(result)
+        SaveData(expName, modelName, result, needTrans=False)
+        print("write DrImpute successfully!")
+    except:
+        print("write DrImpute failed!")
+
+# VIPER
+def imputeByVIPER(expName, dataPath, labelPath=None):
+    modelName = "VIPER"
+    X, y = LoadData(expName, dataPath, labelPath)
+    result = robjects.r('''
+        library(VIPER)
+        raw <- read.table("%s", header=TRUE, sep="\t")
+        rownames(raw) <- raw[,1]
+        raw <- raw[, -1]
+        res <- VIPER(raw, num = 5000, percentage.cutoff = 0.1, minbool = FALSE, alpha = 1, 
+                     report = FALSE, outdir = NULL, prefix = NULL)
+        return (res$imputed)
+        ''' % (dataPath))
+    result = np.array(result)
+    SaveData(expName, modelName, result, needTrans=False)
+    print("write VIPER successfully!")
+
+# scIGANs
+def imputeByscIGANs(expName, dataPath, labelPath=None):
+    modelName = "scIGANs"
+    X, y = LoadData(expName, dataPath, labelPath)
+    cmd = "scIGANs/scIGANs {0} -b {1} -o results/scIGANs -j {2}".format(dataPath, len(X), expName+"_impute")
+    os.system(cmd)
+    print("write scIGANs successfully!")

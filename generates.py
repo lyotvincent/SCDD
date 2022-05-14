@@ -8,6 +8,9 @@ import os
 import pandas as pd
 
 def RunComps(expName, dataPath, labelPath=None):
+    imputeByscIGANs(expName, dataPath, labelPath)
+    imputeByDrImpute(expName, dataPath, labelPath)
+    imputeByVIPER(expName, dataPath, labelPath)
     imputeByMAGIC(expName, dataPath, labelPath)
     imputeBySAVER(expName, dataPath, labelPath)
     imputeByDCA(expName, dataPath, labelPath)
@@ -100,4 +103,4 @@ def Generate_GUO(has_results=False):
         RunComps(expName, dataPath, labelPath)
     os.system("~/anaconda3/bin/python paper/guo/guo.py")
 
-Generate_GUO(True)
+Generate_GUO(False)
