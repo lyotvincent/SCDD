@@ -8,6 +8,7 @@ import os
 import pandas as pd
 
 def RunComps(expName, dataPath, labelPath=None):
+    imputeByDeepImpute(expName, dataPath, labelPath)
     imputeByscIGANs(expName, dataPath, labelPath)
     imputeByDrImpute(expName, dataPath, labelPath)
     imputeByVIPER(expName, dataPath, labelPath)

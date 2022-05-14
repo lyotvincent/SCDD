@@ -9,6 +9,7 @@ import anndata as ad
 import umap
 import scanpy as sc
 import time
+from deepimpute.multinet import MultiNet
 
 # MAGIC
 def imputeByMAGIC(expName, dataPath, labelPath=None):
@@ -114,3 +115,14 @@ def imputeByscIGANs(expName, dataPath, labelPath=None):
     cmd = "scIGANs/scIGANs {0} -b {1} -o results/scIGANs -j {2}".format(dataPath, len(X), expName+"_impute")
     os.system(cmd)
     print("write scIGANs successfully!")
+
+# DeepImpute
+def imputeByDeepImpute(expName, dataPath, labelPath=None):
+    modelName = "DeepImpute"
+    X, y = LoadData(expName, dataPath, labelPath)
+    data = pd.DataFrame(X)
+    model = MultiNet()
+    model.fit(data)
+    result = model.predict(data)
+    SaveData(expName, modelName, result)
+    print("write DeepImpute successfully!")
