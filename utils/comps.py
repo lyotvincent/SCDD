@@ -126,3 +126,91 @@ def imputeByDeepImpute(expName, dataPath, labelPath=None):
     result = model.predict(data)
     SaveData(expName, modelName, result)
     print("write DeepImpute successfully!")
+
+# scTSSR
+def imputeByscTSSR(expName, dataPath, labelPath=None):
+    modelName = "scTSSR"
+    X, y = LoadData(expName, dataPath, labelPath)
+    result = robjects.r('''
+        library(scTSSR)
+        raw <- read.table("%s", header=TRUE, sep="\t")
+        rownames(raw) <- raw[,1]
+        raw <- raw[, -1]
+        result <- scTSSR(raw, 
+                          percent=0.05, 
+                          learning_rate=0.0001, 
+                          epochs=100, 
+                          run_batch = FALSE,
+                          estimates.only = TRUE,
+                          ncores = 1)
+        return (result)
+        ''' % (dataPath))
+    result = np.array(result)
+    SaveData(expName, modelName, result)
+    print("write scTSSR successfully!")
+
+# scImpute
+def imputeByscImpute(expName, dataPath, labelPath=None):
+    modelName = "scImpute"
+    X, y = LoadData(expName, dataPath, labelPath)
+    result = robjects.r('''
+        library(scImpute)
+        res <- scimpute(# full path to raw count matrix
+              count_path = "%s", 
+              infile = "txt",           # format of input file
+              outfile = "txt",          # format of output file
+              out_dir = "./results/scImpute/",           # full path to output directory
+              labeled = FALSE,          # cell type labels not available
+              Kcluster = 6,
+              drop_thre = 0.5,          # threshold set on dropout probability
+              ncores = 1)              # number of cores used in parallel computation
+        ''' % (dataPath))
+    tpfiles = os.listdir("results/scImpute")
+    tpfiles.remove("scimpute_count.txt")
+    for file in tpfiles:
+        os.remove("results/scImpute/" + file)
+    os.rename("results/scImpute/scimpute_count.txt",
+              "results/scImpute/{0}_{1}_impute.tsv".format(expName, modelName))
+    print("write scImpute successfully!")
+
+# scGNN
+def imputeByscGNN(expName, dataPath, labelPath=None):
+    modelName = "scGNN"
+    if not os.path.isdir("csvdata"):
+        os.makedirs("csvdata")
+    datasetName = expName + ".raw.csv"
+    csvdataPath = "csvdata/" + datasetName
+    df = pd.read_csv(dataPath, sep='\t', index_col=0)
+    df.to_csv(csvdataPath, header=True)
+    pp_cmd = "~/anaconda3/bin/python " \
+             "-W ignore scGNN/PreprocessingscGNN.py " \
+             "--datasetName {0} " \
+             "--datasetDir csvdata/ " \
+             "--LTMGDir csvdata/ " \
+             "--filetype CSV " \
+             "--geneSelectnum 2000 " \
+             "--inferLTMGTag".format(datasetName)
+    os.system(pp_cmd)
+    ipt_cmd = " ~/anaconda3/bin/python " \
+              "-W ignore scGNN/scGNN.py " \
+              "--datasetName csvdata " \
+              "--datasetDir ./ " \
+              "--LTMGDir ./ " \
+              "--outputDir results/scGNN/ " \
+              "--EM-iteration 2 " \
+              "--Regu-epochs 50 " \
+              "--EM-epochs 20 " \
+              "--quickmode " \
+              "--nonsparseMode " \
+              "--regulized-type LTMG"
+    os.system(ipt_cmd)
+    df = pd.read_csv("results/scGNN/csvdata_recon.csv", index_col=0)
+    tpfile = os.listdir("results/scGNN")
+    for f in tpfile:
+        os.remove("results/scGNN/" + f)
+    df.to_csv("results/scGNN/{0}_{1}_impute.tsv".format(expName, modelName), sep='\t', header=True)
+    csvfile = os.listdir("csvdata")
+    for f in csvfile:
+        os.remove("csvdata/" + f)
+    os.rmdir("csvdata")
+    print("write scGNN successfully!")
