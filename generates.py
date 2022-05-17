@@ -8,19 +8,19 @@ import os
 import pandas as pd
 
 def RunComps(expName, dataPath, labelPath=None):
+    dd = SCDD(expName, batch=0)
+    dd.run_Diffusion()
+    dd.run(store=True)
     imputeByscGNN(expName, dataPath, labelPath)
     imputeByscImpute(expName, dataPath, labelPath)
     # imputeByscTSSR(expName, dataPath, labelPath)
-    # imputeByDeepImpute(expName, dataPath, labelPath)
-    # imputeByscIGANs(expName, dataPath, labelPath)
-    # imputeByDrImpute(expName, dataPath, labelPath)
-    # imputeByVIPER(expName, dataPath, labelPath)
-    # imputeByMAGIC(expName, dataPath, labelPath)
-    # imputeBySAVER(expName, dataPath, labelPath)
-    # imputeByDCA(expName, dataPath, labelPath)
-    # dd = SCDD(expName, batch=0)
-    # dd.run_Diffusion()
-    # dd.run(store=True)
+    imputeByDeepImpute(expName, dataPath, labelPath)
+    imputeByscIGANs(expName, dataPath, labelPath)
+    imputeByDrImpute(expName, dataPath, labelPath)
+    #imputeByVIPER(expName, dataPath, labelPath)
+    #imputeByMAGIC(expName, dataPath, labelPath)
+    #imputeBySAVER(expName, dataPath, labelPath)
+    #imputeByDCA(expName, dataPath, labelPath)
 
 
 def Generate_all_imputations():
@@ -105,6 +105,9 @@ def Generate_GUO(has_results=False):
         dataPath = "data/guo.raw.tsv"
         labelPath = "data/guo.label.txt"
         RunComps(expName, dataPath, labelPath)
-    # os.system("~/anaconda3/bin/python paper/guo/guo.py")
+    os.system("~/anaconda3/bin/python paper/guo/guo.py")
 
+Generate_Li(False)
+Generate_Cellcycle(False)
+Generate_Timecourse(False)
 Generate_GUO(False)

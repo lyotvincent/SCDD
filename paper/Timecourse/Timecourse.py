@@ -24,7 +24,7 @@ mtName = ['Raw', 'SCDD', 'SCDD(Diffusion)', 'MAGIC',
           'VIPER', 'DrImpute', 'scImpute', 'scIGANs']
 
 s_dataPath = ['data/Timecourse.raw.tsv', 
-            'results/SCDD/Timecourse_SCDD1_impute.tsv',
+            'results/SCDD/Timecourse_SCDD3_impute.tsv',
             'results/Diffusion/Timecourse_Diffusion_impute.tsv',
             'results/MAGIC/Timecourse_MAGIC_impute.tsv',
             'results/SAVER/Timecourse_SAVER_impute.tsv',

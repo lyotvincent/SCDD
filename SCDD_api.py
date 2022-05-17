@@ -34,14 +34,14 @@ class SCDD:
             self.label = "data/Timecourse.label.txt"
             self.Tran = True
         elif self.name == "guo":
-            self.raw = "data/guo.raw.txt"
+            self.raw = "data/guo.raw.tsv"
             self.label = "data/guo.label.txt"
             self.Tran = True
 
     def run(self, store = False):
         self.data, self.Label = LoadData(self.name, self.raw, self.label, self.Tran)
         self.log_data = np.log(self.data + 1.01)
-        A = getA(self.data, method=self.method)
+        A = getA(self.data, method=self.method, filter=False)
         if store:
             M, Omega, Target, dropout_rate, null_genes = LoadTargets()
         else:
@@ -75,7 +75,5 @@ class SCDD:
         self.result = makeup_results(self.result, self.log_data, null_genes, dropout_rate)
         self.result = np.exp(self.result) - 1
         self.result = np.round(self.result)
+        self.result[self.result < 0] = 0
         SaveData(self.name, "Diffusion", self.result)
-
-
-
