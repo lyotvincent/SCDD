@@ -1,12 +1,14 @@
 import numpy as np
 import pandas as pd
+import random
+from tqdm import tqdm
 import os
 
 cells = np.array([])
 genes = np.array([])
 
 
-def LoadData(expName, dataPath, labelPath=None, needTrans=True, labelHeader=None):
+def LoadData(expName, dataPath, format="tsv", labelPath=None, needTrans=True, labelHeader=None):
     """
     :rtype: tuple(np.array, np.array)
     :param expName: experiment name
@@ -46,6 +48,7 @@ def LoadData(expName, dataPath, labelPath=None, needTrans=True, labelHeader=None
                 l += 1
     print("Load Data OK.")
     return train_data, label
+
 
 
 def SaveData(expName, modelName, result, needTrans=True, batch = None):
@@ -103,3 +106,36 @@ def LoadTargets():
     null_genes = null_genes['arr_0']
     print("Load null_genes from temp...")
     return M, Omega, Target, dropout_rate, null_genes
+
+def DataSplit(h5adpath, outdir, chunksize=5000):
+    if os.path.isdir(outdir) == False:
+        os.makedirs(outdir)
+    import anndata as ad
+    adata = ad.read_h5ad(h5adpath)
+    adsize = adata.shape[0]
+    adidx = list(range(adsize))
+    random.shuffle(adidx)
+    partnum = int((adsize-1) / chunksize + 1)
+    for i in tqdm(range(partnum)):
+        end = chunksize * (i+1)
+        if end > adsize:
+            end = adsize
+        idx = adidx[chunksize * i : end]
+        adata0 = adata[idx, :]
+        adata0.obs['idx'] = idx
+        adata0.write_h5ad(outdir + '/chunk{0}_part{1}.h5ad'.format(chunksize, i))
+    print("data splited to {0}".format("outdir"))
+    # df = pd.DataFrame(adata0.T.X.todense(),
+    #                   index=adata0.obs_names,
+    #                   columns=adata0.var_names,
+    #                   dtype='int')
+    # lbl = adata0.obs['free_annotation']
+    # df.to_csv(outdir + '/cnt/chunk{0}_part{1}.tsv'.format(chunksize, i), sep = '\t', header=True, chunksize=1000)
+    # lbl.to_csv(outdir + '/lbl/chunk{0}_part{1}.txt'.format(chunksize, i), index=False, header=False)
+    # idx = pd.DataFrame(idx)
+    # idx.to_csv(outdir + '/idx/chunk{0}_part{1}.txt'.format(chunksize, i), index=False, header=False)
+
+
+
+
+
