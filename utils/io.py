@@ -91,7 +91,7 @@ def SaveData(expName, modelName, result, format="tsv", needTrans=True, batch = N
         print("Write to {0} successfully!".format(path))
     elif format == "h5ad":
         path = dir + "/" + expName + "_" + modelName + Batch + "_impute.h5ad"
-        adata = ad.AnnData(X=res, obs=pd.DataFrame(genes), var=pd.DataFrame(cells))
+        adata = ad.AnnData(X=res, obs=pd.DataFrame(index=genes), var=pd.DataFrame(index=cells))
         adata.write_h5ad(path)
         print("Write to {0} successfully!".format(path))
 
