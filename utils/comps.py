@@ -15,7 +15,7 @@ from deepimpute.multinet import MultiNet
 def imputeByMAGIC(expName, dataPath, labelPath=None):
     try:
         modelName = 'MAGIC'
-        X, y = LoadData(expName, dataPath, labelPath)
+        X, y = LoadData(expName, dataPath, labelPath=labelPath)
         magic_operator = magic.MAGIC()
         X_magic = magic_operator.fit_transform(X)
         result = X_magic
@@ -31,7 +31,7 @@ def imputeByDCA(expName, dataPath, labelPath=None):
     try:
         modelName = 'DCA'
         data = pd.read_csv(dataPath, sep = '\t', index_col = 0)
-        _, label = LoadData(expName, dataPath, labelPath)
+        _, label = LoadData(expName, dataPath, labelPath=labelPath)
         data = pd.DataFrame(data.T, dtype = int)
         # obs用于保存细胞的信息
         obs = pd.DataFrame(index=data.index)
@@ -60,7 +60,7 @@ def imputeByDCA(expName, dataPath, labelPath=None):
 def imputeBySAVER(expName, dataPath, labelPath=None):
     try:
         modelName = 'SAVER'
-        X, y = LoadData(expName, dataPath, labelPath)
+        X, y = LoadData(expName, dataPath, labelPath=labelPath)
         result = robjects.r('''
         library(SAVER)
         raw <- read.table("%s", header=TRUE, sep="\t")
@@ -80,7 +80,7 @@ def imputeBySAVER(expName, dataPath, labelPath=None):
 # DrImpute
 def imputeByDrImpute(expName, dataPath, labelPath=None):
     modelName = 'DrImpute'
-    X, y = LoadData(expName, dataPath, labelPath)
+    X, y = LoadData(expName, dataPath, labelPath=labelPath)
     try:
         result = robjects.r('''
             library(DrImpute)
@@ -108,7 +108,7 @@ def imputeByDrImpute(expName, dataPath, labelPath=None):
 def imputeByVIPER(expName, dataPath, labelPath=None):
     try:
         modelName = "VIPER"
-        X, y = LoadData(expName, dataPath, labelPath)
+        X, y = LoadData(expName, dataPath, labelPath=labelPath)
         result = robjects.r('''
             library(VIPER)
             raw <- read.table("%s", header=TRUE, sep="\t")
@@ -129,7 +129,7 @@ def imputeByVIPER(expName, dataPath, labelPath=None):
 def imputeByscIGANs(expName, dataPath, labelPath=None):
     try:
         modelName = "scIGANs"
-        X, y = LoadData(expName, dataPath, labelPath)
+        X, y = LoadData(expName, dataPath, labelPath=labelPath)
         cmd = "scIGANs/scIGANs {0} -b {1} -o results/scIGANs -j {2}".format(dataPath, len(X), expName)
         os.system(cmd)
         print("write scIGANs successfully!")
@@ -141,7 +141,7 @@ def imputeByscIGANs(expName, dataPath, labelPath=None):
 def imputeByDeepImpute(expName, dataPath, labelPath=None):
     try:
         modelName = "DeepImpute"
-        X, y = LoadData(expName, dataPath, labelPath)
+        X, y = LoadData(expName, dataPath, labelPath=labelPath)
         data = pd.DataFrame(X)
         model = MultiNet()
         model.fit(data)
@@ -155,7 +155,7 @@ def imputeByDeepImpute(expName, dataPath, labelPath=None):
 # scTSSR
 def imputeByscTSSR(expName, dataPath, labelPath=None):
     modelName = "scTSSR"
-    X, y = LoadData(expName, dataPath, labelPath)
+    X, y = LoadData(expName, dataPath, labelPath=labelPath)
     result = robjects.r('''
         library(scTSSR)
         raw <- read.table("%s", header=TRUE, sep="\t")
@@ -178,7 +178,7 @@ def imputeByscTSSR(expName, dataPath, labelPath=None):
 def imputeByscImpute(expName, dataPath, labelPath=None):
     try:
         modelName = "scImpute"
-        X, y = LoadData(expName, dataPath, labelPath)
+        X, y = LoadData(expName, dataPath, labelPath=labelPath)
         result = robjects.r('''
             library(scImpute)
             res <- scimpute(# full path to raw count matrix
@@ -252,7 +252,7 @@ def imputeByscGNN(expName, dataPath, labelPath=None):
 # scVI
 def imputeByscVI(expName, dataPath, labelPath=None):
     modelName = "scImpute"
-    X, y = LoadData(expName, dataPath, labelPath)
+    X, y = LoadData(expName, dataPath, labelPath=labelPath)
 
 
 

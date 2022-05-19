@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import random
 from tqdm import tqdm
+import anndata as ad
 import os
 
 cells = np.array([])
@@ -18,16 +19,24 @@ def LoadData(expName, dataPath, format="tsv", labelPath=None, needTrans=True, la
     :param labelHeader: need to read the first line or not
     :return: training data and training label
     """
-    df = pd.read_csv(dataPath, sep='\t', index_col=0)
-    print("Experiment:{0}".format(expName))
-    print("Data path:{0}".format(dataPath))
-    print("Label path:{0}".format(labelPath))
+    df = pd.DataFrame()
+    if format == "tsv":
+        df = pd.read_csv(dataPath, sep='\t', index_col=0)
+        print("Experiment:{0}".format(expName))
+        print("Data path:{0}".format(dataPath))
+        print("Label path:{0}".format(labelPath))
+    elif format == "h5ad":
+        adata = ad.read_h5ad(dataPath)
+        df = pd.DataFrame(adata.X.todense(),
+                      index=adata.obs_names,
+                      columns=adata.var_names,
+                      dtype='int')
     # set global values to save cells and genes, which will be used in SaveData
     global cells
     global genes
     cells = df.columns
     genes = df.index
-    if needTrans:
+    if needTrans and format != 'h5ad':
         train_data = np.array(df).transpose()
     else:
         train_data = np.array(df)
@@ -50,8 +59,7 @@ def LoadData(expName, dataPath, format="tsv", labelPath=None, needTrans=True, la
     return train_data, label
 
 
-
-def SaveData(expName, modelName, result, needTrans=True, batch = None):
+def SaveData(expName, modelName, result, format="tsv", needTrans=True, batch = None):
     """
     This function will call `impute' member in model and save the result,
         which will use global cells and genes.
@@ -62,24 +70,30 @@ def SaveData(expName, modelName, result, needTrans=True, batch = None):
     :param modelName:  the model name
     :param result:  impute result
     """
-    Batch = str("")
-    if batch:
-        Batch = str(batch)
-    res = result
-    if needTrans:
-        res = pd.DataFrame(res.transpose())
-    else:
-        res = pd.DataFrame(res)
-    res.index = genes
-    res.columns = cells
     if os.path.isdir("results") == False:
         os.makedirs("results")
     dir = "results/"+ modelName
     if os.path.isdir(dir) == False:
         os.makedirs(dir)
-    path = dir + "/" + expName + "_" + modelName + Batch + "_impute.tsv"
-    res.to_csv(path, sep='\t')
-    print("Write to {0} successfully!".format(path))
+    Batch = str("")
+    if batch:
+        Batch = str(batch)
+    res = result
+    if format == "tsv":
+        path = dir + "/" + expName + "_" + modelName + Batch + "_impute.tsv"
+        if needTrans:
+            res = pd.DataFrame(res.transpose())
+        else:
+            res = pd.DataFrame(res)
+        res.index = genes
+        res.columns = cells
+        res.to_csv(path, sep='\t')
+        print("Write to {0} successfully!".format(path))
+    elif format == "h5ad":
+        path = dir + "/" + expName + "_" + modelName + Batch + "_impute.h5ad"
+        adata = ad.AnnData(X=res, obs=pd.DataFrame(genes), var=pd.DataFrame(cells))
+        adata.write_h5ad(path)
+        print("Write to {0} successfully!".format(path))
 
 
 def SaveTargets(M, Omega, Target, dropout_rate, null_genes):
