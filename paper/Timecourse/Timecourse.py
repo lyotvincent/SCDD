@@ -7,24 +7,24 @@ import anndata as ad
 sc.settings.verbosity = 3             # verbosity: errors (0), warnings (1), info (2), hints (3)
 sc.logging.print_header()
 sc.settings.set_figure_params(dpi=80, facecolor='white')
-dataPath = ['data/Timecourse.raw.tsv', 
-            'data/Timecourse_SCDD_impute.tsv',
-            'data/Timecourse_Diffusion_impute.tsv',
-            'data/Timecourse_MAGIC_impute.tsv',
-            'data/Timecourse_SAVER_impute.tsv',
-            'data/Timecourse_DCA_impute.tsv',
-            'data/Timecourse_DeepImpute_impute.txt',
-            'data/Timecourse_SCRABBLE_impute.tsv',
-            'data/Timecourse_VIPER_impute.tsv',
-            'data/Timecourse_DrImpute_impute.tsv',
-            'data/Timecourse_scImpute_impute.tsv', 
-            'data/Timecourse_scIGANs_impute.tsv']
-mtName = ['Raw', 'SCDD', 'SCDD(Diffusion)', 'MAGIC',
-          'SAVER', 'DCA', 'DeepImpute', 'SCRABBLE',
-          'VIPER', 'DrImpute', 'scImpute', 'scIGANs']
+# dataPath = ['data/Timecourse.raw.tsv',
+#             'data/Timecourse_SCDD_impute.tsv',
+#             'data/Timecourse_Diffusion_impute.tsv',
+#             'data/Timecourse_MAGIC_impute.tsv',
+#             'data/Timecourse_SAVER_impute.tsv',
+#             'data/Timecourse_DCA_impute.tsv',
+#             'data/Timecourse_DeepImpute_impute.txt',
+#             'data/Timecourse_SCRABBLE_impute.tsv',
+#             'data/Timecourse_VIPER_impute.tsv',
+#             'data/Timecourse_DrImpute_impute.tsv',
+#             'data/Timecourse_scImpute_impute.tsv',
+#             'data/Timecourse_scIGANs_impute.tsv']
+# mtName = ['Raw', 'SCDD', 'SCDD(Diffusion)', 'MAGIC',
+#           'SAVER', 'DCA', 'DeepImpute', 'SCRABBLE',
+#           'VIPER', 'DrImpute', 'scImpute', 'scIGANs']
 
 s_dataPath = ['data/Timecourse.raw.tsv', 
-            'results/SCDD/Timecourse_SCDD1_impute.tsv',
+            'results/SCDD/Timecourse_SCDD5_impute.tsv',
             'results/Diffusion/Timecourse_Diffusion_impute.tsv',
             'results/MAGIC/Timecourse_MAGIC_impute.tsv',
             'results/SAVER/Timecourse_SAVER_impute.tsv',
@@ -32,12 +32,12 @@ s_dataPath = ['data/Timecourse.raw.tsv',
             'results/scIGANs/Timecourse_scIGANs_impute.tsv',
             'results/DrImpute/Timecourse_DrImpute_impute.tsv',
             'results/DeepImpute/Timecourse_DeepImpute_impute.tsv',
-            'results/scGNN/Timecourse_scGNN_impute.tsv',
+            'results/ALRA/Timecourse_ALRA_impute.tsv',
             'results/VIPER/Timecourse_VIPER_impute.tsv',
-            'results/VIPER/Timecourse_VIPER_impute.tsv'  ]
+            'results/scVI/Timecourse_scVI_impute.tsv']
 
 s_mtName = ['Raw', 'SCDD', 'SCDD(Diffusion)', 'MAGIC',
-          'SAVER', 'DCA', 'scIGANs', 'DrImpute', 'DeepImpute', 'scGNN', 'VIPER', 'VIPER']
+          'SAVER', 'DCA', 'scIGANs', 'DrImpute', 'DeepImpute', 'ALRA', 'VIPER', 'scVI']
 
 labelPath = 'data/Timecourse.label.txt'
 label = np.array(pd.read_csv(labelPath, header=None))
@@ -46,14 +46,18 @@ def generate_figures(dataPath, label, mtName, layouts, axs, type="paga", gene=No
     raws, cols = layouts[0], layouts[1]
     for i in range(0, raws):
         for j in range(0, cols):
-            data = pd.read_csv(dataPath[cols*i+j], sep = '\t', index_col = 0)
+            print("generating {0}".format(mtName[cols * i + j]))
+            if mtName[cols * i + j] == 'scImpute':
+                data = pd.read_csv(dataPath[cols*i+j], sep=' ')
+            else:
+                data = pd.read_csv(dataPath[cols*i+j], sep = '\t', index_col = 0)
             data = pd.DataFrame(data.T, dtype = int)
             obs = pd.DataFrame(index=data.index)
             obs['label'] = label
             var_names = data.columns
             var = pd.DataFrame(index=var_names)
             adata = ad.AnnData(np.array(data), obs=obs, var=var)
-            adata.X = adata.X.astype('float64') 
+            adata.X = adata.X.astype('float64')
             sc.pp.filter_genes(adata, min_counts=1)
             sc.pp.recipe_zheng17(adata)
             sc.tl.pca(adata, svd_solver='arpack')

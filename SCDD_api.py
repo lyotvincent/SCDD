@@ -57,7 +57,7 @@ class SCDD:
             Omega, Target = get_supervise(self.log_data , dropout_rate, null_genes, M)
             SaveTargets(M, Omega, Target, dropout_rate, null_genes)
         md = SC_Denoising(self.log_data, A, Omega, Target)
-        md.train(200)
+        md.train(2000)
         self.result = md.impute()
         self.result, self.cresult = makeup_results_all(self.result, self.log_data, null_genes, dropout_rate)
         self.result = np.exp(self.result) - 1.01 + 0.5

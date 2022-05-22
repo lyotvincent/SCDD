@@ -130,7 +130,7 @@ def imputeByscIGANs(expName, dataPath, labelPath=None):
     try:
         modelName = "scIGANs"
         X, y = LoadData(expName, dataPath, labelPath=labelPath)
-        cmd = "scIGANs/scIGANs {0} -b {1} -o results/scIGANs -j {2}".format(dataPath, len(X), expName)
+        cmd = "scIGANs/scIGANs {0} -b {1} -o results/scIGANs -j {2}".format(dataPath, 128, expName)
         os.system(cmd)
         print("write scIGANs successfully!")
     except:
@@ -171,7 +171,7 @@ def imputeByscTSSR(expName, dataPath, labelPath=None):
         return (result)
         ''' % (dataPath))
     result = np.array(result)
-    SaveData(expName, modelName, result)
+    SaveData(expName, modelName, result, needTrans=False)
     print("write scTSSR successfully!")
 
 # scImpute
@@ -218,7 +218,7 @@ def imputeByscGNN(expName, dataPath, labelPath=None):
                  "--datasetDir csvdata/ " \
                  "--LTMGDir csvdata/ " \
                  "--filetype CSV " \
-                 "--geneSelectnum 2000 " \
+                 "--geneSelectnum 15000 " \
                  "--inferLTMGTag".format(datasetName)
         os.system(pp_cmd)
         ipt_cmd = " ~/anaconda3/bin/python " \
@@ -249,10 +249,36 @@ def imputeByscGNN(expName, dataPath, labelPath=None):
         with open('log.txt', 'a+') as f:
             print('write scGNN failed!', file=f)
 
-# scVI
-def imputeByscVI(expName, dataPath, labelPath=None):
+# EnImpute
+def imputeByEnImpute(expName, dataPath, labelPath=None):
     modelName = "scImpute"
     X, y = LoadData(expName, dataPath, labelPath=labelPath)
+
+
+# ALRA
+def imputeByALRA(expName, dataPath, labelPath=None):
+    modelName = "ALRA"
+    try:
+        X, y = LoadData(expName, dataPath, labelPath=labelPath)
+        result = robjects.r('''
+                source('ALRA/alra.R')
+                raw <- read.table("%s", header=TRUE, sep='\t')
+                rownames(raw) <- raw[,1]
+                raw <- raw[, -1]
+                count <- t(as.matrix(raw))
+                A_norm <- normalize_data(count)
+                k_choice <- choose_k(A_norm)
+                A_norm_completed <- alra(A_norm,k=k_choice$k)[[3]]
+                return(A_norm_completed)
+                    ''' % (dataPath))
+        result = np.array(result)
+        SaveData(expName, modelName, result, needTrans=True)
+        print("write ALRA successfully!")
+    except:
+        with open('log.txt', 'a+') as f:
+            print('write ALRA failed!', file=f)
+
+
 
 
 
