@@ -41,6 +41,26 @@ class SCDD:
             self.raw = "data/liver.raw.tsv"
             self.label = "data/liver.label.txt"
             self.Tran = True
+        elif self.name == "fish":
+            self.raw = "data/fish.raw.tsv"
+            self.label = ""
+            self.Tran = True
+        elif self.name == "CIDR":
+            self.raw = "data/CIDR.raw.tsv"
+            self.label = "data/CIDR.label.txt"
+            self.Tran = True
+        elif self.name == "sc_10x":
+            self.raw = "data/sc_10x.raw.tsv"
+            self.label = "data/sc_10x.label.txt"
+            self.Tran = True
+        elif self.name == "sc_celseq2":
+            self.raw = "data/sc_celseq2.raw.tsv"
+            self.label = "data/sc_celseq2.label.txt"
+            self.Tran = True
+        elif self.name == "sc_dropseq":
+            self.raw = "data/sc_dropseq.raw.tsv"
+            self.label = "data/sc_dropseq.label.txt"
+            self.Tran = True
 
     def run(self, store = False):
         self.data, self.Label = LoadData(self.name, self.raw,

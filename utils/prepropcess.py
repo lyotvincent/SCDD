@@ -25,7 +25,7 @@ def RobjKmeans(train_data: np.array) -> np.array:
     """
     np.savetxt('temp/train_data.txt', train_data, fmt="%f," * len(train_data[0]))
     print("Converted data to R-object and start R-engine...")
-    M, C = robjects.r('''
+    M = robjects.r('''
     library('SC3')
     a<-read.table('temp/train_data.txt', header=F,sep=',')
     tp<-unlist(a)
@@ -44,8 +44,7 @@ def RobjKmeans(train_data: np.array) -> np.array:
     t<-sc3_calc_consens(t)
     info <- metadata(t)$sc3$consensus[[as.character(ks), exact = FALSE]]
     con <- info$consensus
-    clu <- info$silhouette[,1]
-    return (list(con, clu))
+    return (con)
     ''' % (train_data.shape[0], train_data.shape[1]))
     M = np.array(M)
     return M

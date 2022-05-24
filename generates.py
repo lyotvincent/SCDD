@@ -8,20 +8,20 @@ import os
 import pandas as pd
 
 def RunComps(expName, dataPath, labelPath=None, format="tsv"):
-    # dd = SCDD(expName, raw=dataPath, batch=0, format=format)
-    # dd.run_Diffusion()
-    # dd.run(store=True)
+    dd = SCDD(expName, raw=dataPath, batch=0, format=format)
+    dd.run_Diffusion()
+    dd.run(store=True)
     # imputeByscGNN(expName, dataPath, labelPath, format)
     # # imputeByscImpute(expName, dataPath, labelPath, format)
     # # imputeByscTSSR(expName, dataPath, labelPath, format)
-    # imputeByDeepImpute(expName, dataPath, labelPath, format)
+    imputeByDeepImpute(expName, dataPath, labelPath, format)
     # imputeByscIGANs(expName, dataPath, labelPath, format)
     imputeByDrImpute(expName, dataPath, labelPath, format)
     imputeByVIPER(expName, dataPath, labelPath, format)
-    # imputeByMAGIC(expName, dataPath, labelPath, format)
+    imputeByMAGIC(expName, dataPath, labelPath, format)
     imputeBySAVER(expName, dataPath, labelPath, format)
-    # imputeByDCA(expName, dataPath, labelPath, format)
-    # imputeByALRA(expName, dataPath, labelPath, format)
+    imputeByDCA(expName, dataPath, labelPath)
+    imputeByALRA(expName, dataPath, labelPath, format)
 
 
 def Generate_all_imputations():
@@ -117,4 +117,46 @@ def Generate_liver(has_results=False):
         RunComps(expName, dataPath, labelPath=labelPath, format=format)
     os.system("~/anaconda3/bin/python paper/liver/liver.py")
 
-Generate_liver(True)
+def Generate_fish(has_results=False):
+    if has_results == False:
+        expName = "fish"
+        dataPath = "data/fish.raw.tsv"
+        format = "tsv"
+        RunComps(expName, dataPath, labelPath=None, format=format)
+
+def Generate_CIDR(has_results=False):
+    if has_results == False:
+        expName = "CIDR"
+        dataPath = "data/CIDR.raw.tsv"
+        labelPath = "data/CIDR.label.txt"
+        format = "tsv"
+        RunComps(expName, dataPath, labelPath, format=format)
+
+def Generate_sc_10x(has_results=False):
+    if has_results == False:
+        expName = "sc_10x"
+        dataPath = "data/sc_10x.raw.tsv"
+        labelPath = "data/sc_10x.label.txt"
+        format = "tsv"
+        RunComps(expName, dataPath, labelPath, format=format)
+
+def Generate_sc_celseq2(has_results=False):
+    if has_results == False:
+        expName = "sc_celseq2"
+        dataPath = "data/sc_celseq2.raw.tsv"
+        labelPath = "data/sc_celseq2.label.txt"
+        format = "tsv"
+        RunComps(expName, dataPath, labelPath, format=format)
+
+def Generate_sc_dropseq(has_results=False):
+    if has_results == False:
+        expName = "sc_dropseq"
+        dataPath = "data/sc_dropseq.raw.tsv"
+        labelPath = "data/sc_dropseq.label.txt"
+        format = "tsv"
+        RunComps(expName, dataPath, labelPath, format=format)
+
+# Generate_CIDR(has_results=False)
+Generate_sc_10x(has_results=False)
+Generate_sc_celseq2(has_results=False)
+Generate_sc_dropseq(has_results=False)
