@@ -7,20 +7,21 @@ from SCDD_api import *
 import os
 import pandas as pd
 
-def RunComps(expName, dataPath, labelPath=None):
-    dd = SCDD(expName, batch=0)
-    dd.run_Diffusion()
-    dd.run(store=True)
-    imputeByscGNN(expName, dataPath, labelPath)
-    imputeByscImpute(expName, dataPath, labelPath)
-    # imputeByscTSSR(expName, dataPath, labelPath)
-    imputeByDeepImpute(expName, dataPath, labelPath)
-    imputeByscIGANs(expName, dataPath, labelPath)
-    imputeByDrImpute(expName, dataPath, labelPath)
-    #imputeByVIPER(expName, dataPath, labelPath)
-    #imputeByMAGIC(expName, dataPath, labelPath)
-    #imputeBySAVER(expName, dataPath, labelPath)
-    #imputeByDCA(expName, dataPath, labelPath)
+def RunComps(expName, dataPath, labelPath=None, format="tsv"):
+    # dd = SCDD(expName, raw=dataPath, batch=0, format=format)
+    # dd.run_Diffusion()
+    # dd.run(store=True)
+    # imputeByscGNN(expName, dataPath, labelPath, format)
+    # # imputeByscImpute(expName, dataPath, labelPath, format)
+    # # imputeByscTSSR(expName, dataPath, labelPath, format)
+    # imputeByDeepImpute(expName, dataPath, labelPath, format)
+    # imputeByscIGANs(expName, dataPath, labelPath, format)
+    imputeByDrImpute(expName, dataPath, labelPath, format)
+    imputeByVIPER(expName, dataPath, labelPath, format)
+    # imputeByMAGIC(expName, dataPath, labelPath, format)
+    imputeBySAVER(expName, dataPath, labelPath, format)
+    # imputeByDCA(expName, dataPath, labelPath, format)
+    # imputeByALRA(expName, dataPath, labelPath, format)
 
 
 def Generate_all_imputations():
@@ -56,11 +57,11 @@ def Generate_Bone(has_results=False):
         labelPath = "data/Bone.label.txt"
         RunComps(expName, dataPath, labelPath)
     os.system("Rscript paper/Bone/Bone.R")
-    predicts = pd.read_csv("temp/Bone_predicts.tsv", sep='\t')
-    perfs = pd.read_csv("temp/Bone_perfs.tsv", sep='\t')
+    predicts = pd.read_csv("temp/Bone_predicts1.tsv", sep='\t')
+    perfs = pd.read_csv("temp/Bone_perfs1.tsv", sep='\t')
     mcounts = len(perfs) - 1
     perfs = cal_purity(perfs, predicts, mcounts)
-    perfs.to_csv("paper/Bone/Bone_perfs.tsv", sep='\t')
+    perfs.to_csv("paper/Bone/Bone_perfs1.tsv", sep='\t')
     print("Generate Bone OK.")
 
 
@@ -82,11 +83,11 @@ def Generate_Li(has_results=False):
         labelPath = "data/Li.label.txt"
         RunComps(expName, dataPath, labelPath)
     os.system("Rscript paper/Li/Li.R")
-    predicts = pd.read_csv("temp/Li_predicts.tsv", sep='\t')
-    perfs = pd.read_csv("temp/Li_perfs.tsv", sep='\t')
+    predicts = pd.read_csv("temp/Li_predicts1.tsv", sep='\t')
+    perfs = pd.read_csv("temp/Li_perfs1.tsv", sep='\t')
     mcounts = len(perfs) - 1
     perfs = cal_purity(perfs, predicts, mcounts)
-    perfs.to_csv("paper/Li/Li_perfs.tsv", sep='\t')
+    perfs.to_csv("paper/Li/Li_perfs1.tsv", sep='\t')
     print("Generate Li OK.")
 
 def Generate_Timecourse(has_results=False):
@@ -107,7 +108,13 @@ def Generate_GUO(has_results=False):
         RunComps(expName, dataPath, labelPath)
     os.system("~/anaconda3/bin/python paper/guo/guo.py")
 
-Generate_Li(False)
-Generate_Cellcycle(False)
-Generate_Timecourse(False)
-Generate_GUO(False)
+def Generate_liver(has_results=False):
+    if has_results == False:
+        expName = "liver"
+        dataPath = "data/liver.raw.tsv"
+        labelPath = "data/liver.label.txt"
+        format = "tsv"
+        RunComps(expName, dataPath, labelPath=labelPath, format=format)
+    os.system("~/anaconda3/bin/python paper/liver/liver.py")
+
+Generate_liver(True)

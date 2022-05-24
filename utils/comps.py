@@ -12,10 +12,10 @@ import time
 from deepimpute.multinet import MultiNet
 
 # MAGIC
-def imputeByMAGIC(expName, dataPath, labelPath=None):
+def imputeByMAGIC(expName, dataPath, labelPath=None, format="tsv"):
     try:
         modelName = 'MAGIC'
-        X, y = LoadData(expName, dataPath, labelPath=labelPath)
+        X, y = LoadData(expName, dataPath, labelPath=labelPath, format=format)
         magic_operator = magic.MAGIC()
         X_magic = magic_operator.fit_transform(X)
         result = X_magic
@@ -57,7 +57,7 @@ def imputeByDCA(expName, dataPath, labelPath=None):
             print('write DCA failed!', file=f)
 
 # SAVER
-def imputeBySAVER(expName, dataPath, labelPath=None):
+def imputeBySAVER(expName, dataPath, labelPath=None, format="tsv"):
     try:
         modelName = 'SAVER'
         X, y = LoadData(expName, dataPath, labelPath=labelPath)
@@ -78,7 +78,7 @@ def imputeBySAVER(expName, dataPath, labelPath=None):
             print('write SAVER failed!', file=f)
 
 # DrImpute
-def imputeByDrImpute(expName, dataPath, labelPath=None):
+def imputeByDrImpute(expName, dataPath, labelPath=None, format="tsv"):
     modelName = 'DrImpute'
     X, y = LoadData(expName, dataPath, labelPath=labelPath)
     try:
@@ -90,10 +90,10 @@ def imputeByDrImpute(expName, dataPath, labelPath=None):
             raw <- read.table("%s", header=TRUE, sep="\t")
             rownames(raw) <- raw[,1]
             raw <- raw[, -1]
-            raw <- Matrix(as.matrix(raw))
+            raw <- as.matrix(raw)
             raw.log <- log(raw + 1)
             set.seed(1)
-            result <- DrImpute(raw.log, mc.cores = 7)
+            result <- DrImpute(raw.log)
             result <- exp(result) - 1
             return(result)
             ''' % (dataPath))
@@ -105,7 +105,7 @@ def imputeByDrImpute(expName, dataPath, labelPath=None):
             print('write DrImpute failed!', file=f)
 
 # VIPER
-def imputeByVIPER(expName, dataPath, labelPath=None):
+def imputeByVIPER(expName, dataPath, labelPath=None, format="tsv"):
     try:
         modelName = "VIPER"
         X, y = LoadData(expName, dataPath, labelPath=labelPath)
@@ -126,7 +126,7 @@ def imputeByVIPER(expName, dataPath, labelPath=None):
             print('write VIPER failed!', file=f)
 
 # scIGANs
-def imputeByscIGANs(expName, dataPath, labelPath=None):
+def imputeByscIGANs(expName, dataPath, labelPath=None, format="tsv"):
     try:
         modelName = "scIGANs"
         X, y = LoadData(expName, dataPath, labelPath=labelPath)
@@ -138,10 +138,10 @@ def imputeByscIGANs(expName, dataPath, labelPath=None):
             print('write scIGANs failed!', file=f)
 
 # DeepImpute
-def imputeByDeepImpute(expName, dataPath, labelPath=None):
+def imputeByDeepImpute(expName, dataPath, labelPath=None, format="tsv"):
     try:
         modelName = "DeepImpute"
-        X, y = LoadData(expName, dataPath, labelPath=labelPath)
+        X, y = LoadData(expName, dataPath, labelPath=labelPath, format=format)
         data = pd.DataFrame(X)
         model = MultiNet()
         model.fit(data)
@@ -153,7 +153,7 @@ def imputeByDeepImpute(expName, dataPath, labelPath=None):
             print('write DeepImpute failed!', file=f)
 
 # scTSSR
-def imputeByscTSSR(expName, dataPath, labelPath=None):
+def imputeByscTSSR(expName, dataPath, labelPath=None, format="tsv"):
     modelName = "scTSSR"
     X, y = LoadData(expName, dataPath, labelPath=labelPath)
     result = robjects.r('''
@@ -175,7 +175,7 @@ def imputeByscTSSR(expName, dataPath, labelPath=None):
     print("write scTSSR successfully!")
 
 # scImpute
-def imputeByscImpute(expName, dataPath, labelPath=None):
+def imputeByscImpute(expName, dataPath, labelPath=None, format="tsv"):
     try:
         modelName = "scImpute"
         X, y = LoadData(expName, dataPath, labelPath=labelPath)
@@ -203,7 +203,7 @@ def imputeByscImpute(expName, dataPath, labelPath=None):
             print('write scImpute failed!', file=f)
 
 # scGNN
-def imputeByscGNN(expName, dataPath, labelPath=None):
+def imputeByscGNN(expName, dataPath, labelPath=None, format="tsv"):
     try:
         modelName = "scGNN"
         if not os.path.isdir("csvdata"):
@@ -250,13 +250,13 @@ def imputeByscGNN(expName, dataPath, labelPath=None):
             print('write scGNN failed!', file=f)
 
 # EnImpute
-def imputeByEnImpute(expName, dataPath, labelPath=None):
+def imputeByEnImpute(expName, dataPath, labelPath=None, format="tsv"):
     modelName = "scImpute"
     X, y = LoadData(expName, dataPath, labelPath=labelPath)
 
 
 # ALRA
-def imputeByALRA(expName, dataPath, labelPath=None):
+def imputeByALRA(expName, dataPath, labelPath=None, format="tsv"):
     modelName = "ALRA"
     try:
         X, y = LoadData(expName, dataPath, labelPath=labelPath)

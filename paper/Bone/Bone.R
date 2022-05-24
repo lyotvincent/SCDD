@@ -23,7 +23,7 @@ getUMAP <- function(raw, label, has_name = TRUE) {
     return(Seurat_raw)
 }
 
-cluster <- function(raw, label, has_name = TRUE) {
+cluster <- function(raw, label, has_name = TRUE, do_norm = TRUE) {
     if (has_name == FALSE) {
         rownames(raw) <- raw[, 1] # 将第一列作为行名
         raw <- raw[, -1] # 去除第一列
@@ -35,7 +35,9 @@ cluster <- function(raw, label, has_name = TRUE) {
     dimnames <- list(rownames(raw), colnames(raw)) # 保存行名和列名
     Seurat_raw <- CreateSeuratObject(raw, project = "SeuratObj", assay = "RNA")
     Seurat_raw@meta.data$orig.ident <- as.factor(label[, 1])
-    Seurat_raw <- NormalizeData(Seurat_raw, normalization.method = "LogNormalize", scale.factor = 10000)
+    if(do_norm){
+      Seurat_raw <- NormalizeData(Seurat_raw, normalization.method = "LogNormalize", scale.factor = 10000)
+    }
     Seurat_raw <- FindVariableFeatures(Seurat_raw, selection.method = "vst", nfeatures = 2000)
     all.genes <- rownames(Seurat_raw)
     Seurat_raw <- ScaleData(Seurat_raw, features = all.genes)
@@ -99,6 +101,12 @@ Diffusion.path <- paste0("results/Diffusion/Bone_Diffusion_impute.tsv")
 magic.path <- paste0("results/MAGIC/Bone_MAGIC_impute.tsv")
 saver.path <- paste0("results/SAVER/Bone_SAVER_impute.tsv")
 dca.path <- paste0("results/DCA/Bone_DCA_impute.tsv")
+DeepImpute.path <- paste0("results/DeepImpute/Bone_DeepImpute_impute.tsv")
+DrImpute.path <- paste0("results/DrImpute/Bone_DrImpute_impute.tsv")
+scGNN.path <- paste0("results/scGNN/Bone_scGNN_impute.tsv")
+ALRA.path <- paste0("results/ALRA/Bone_ALRA_impute.tsv")
+scIGANs.path <- paste0("results/scIGANs/Bone_scIGANs_impute.tsv")
+scVI.path <- paste0("results/scVI/Bone_scVI_impute.tsv")
 
 raw <- read.table(raw.path, sep = '\t',  header = TRUE)
 label <- read.table(label.path, sep = '\t',  header = FALSE)
@@ -107,6 +115,12 @@ Diffusion <- read.table(Diffusion.path, sep = '\t',  header = TRUE)
 magic <- read.table(magic.path, sep = '\t',  header = TRUE)
 saver <- read.table(saver.path, sep = '\t',  header = TRUE)
 dca <- read.table(dca.path, sep = '\t',  header = TRUE)
+DeepImpute <- read.table(DeepImpute.path, sep = '\t',  header = TRUE)
+DrImpute <- read.table(DrImpute.path, sep = '\t',  header = TRUE)
+scGNN <- read.table(scGNN.path, sep = '\t',  header = TRUE)
+ALRA <- read.table(ALRA.path, sep = '\t',  header = TRUE)
+scIGANs <- read.table(scIGANs.path, sep = '\t',  header = TRUE) 
+scVI <- read.table(scVI.path, sep = '\t',  header = TRUE)
 
 
 raw.cluster <- cluster(raw, label, F)
@@ -115,6 +129,12 @@ Diffusion.cluster <- cluster(Diffusion, label, F)
 magic.cluster <- cluster(magic, label, F)
 saver.cluster <- cluster(saver, label, T)
 dca.cluster <- cluster(dca, label, F)
+DeepImpute.cluster <- cluster(DeepImpute, label, F)
+DrImpute.cluster <- cluster(DrImpute, label, F)
+scGNN.cluster <- cluster(scGNN, label, F)
+ALRA.cluster <- cluster(ALRA, label, F, do_norm = FALSE)
+scIGANs.cluster <- cluster(scIGANs, label, T)
+scVI.cluster <- cluster(scVI, label, F)
 
 raw.perf <- no_uk_comp(raw.cluster, label)
 SCDD.perf <- no_uk_comp(SCDD.cluster, label)
@@ -122,10 +142,20 @@ Diffusion.perf <- no_uk_comp(Diffusion.cluster, label)
 magic.perf <- no_uk_comp(magic.cluster, label)
 saver.perf <- no_uk_comp(saver.cluster, label)
 dca.perf <- no_uk_comp(dca.cluster, label)
+DeepImpute.perf <- no_uk_comp(DeepImpute.cluster, label)
+DrImpute.perf <- no_uk_comp(DrImpute.cluster, label)
+scGNN.perf <- no_uk_comp(scGNN.cluster, label)
+ALRA.perf <- no_uk_comp(ALRA.cluster, label)
+scIGANs.perf <- no_uk_comp(scIGANs.cluster, label)
+scVI.perf <- no_uk_comp(scVI.cluster, label)
+
+
 perf <- data.frame(raw.perf)
-pf <- rbind(perf, SCDD.perf, Diffusion.perf, magic.perf, saver.perf, dca.perf)
-rownames(pf) <- c('Raw', 'SCDD', 'SCDD(Diffusion)', 'MAGIC', 'SAVER', 'DCA')
-write.table(pf, "temp/Bone_perfs.tsv", sep='\t')
+pf <- rbind(perf, SCDD.perf, Diffusion.perf, magic.perf, saver.perf, dca.perf,
+            DeepImpute.perf, DrImpute.perf, scGNN.perf, ALRA.perf, scIGANs.perf, scVI.perf)
+rownames(pf) <- c('Raw', 'SCDD', 'SCDD(Diffusion)', 'MAGIC', 'SAVER', 'DCA',
+                  'DeepImpute', 'DrImpute', 'scGNN', 'ALRA', 'scIGANs', 'scVI')
+write.table(pf, "temp/Bone_perfs1.tsv", sep='\t')
 
 
 raw.ident <- no_uk_ident(raw.cluster, label)
@@ -134,12 +164,21 @@ Diffusion.ident <- no_uk_ident(Diffusion.cluster, label)
 magic.ident <- no_uk_ident(magic.cluster, label)
 saver.ident <- no_uk_ident(saver.cluster, label)
 dca.ident <- no_uk_ident(dca.cluster, label)
+DeepImpute.ident <- no_uk_ident(DeepImpute.cluster, label)
+DrImpute.ident <- no_uk_ident(DrImpute.cluster, label)
+scGNN.ident <- no_uk_ident(scGNN.cluster, label)
+ALRA.ident <- no_uk_ident(ALRA.cluster, label)
+scIGANs.ident <- no_uk_ident(scIGANs.cluster, label)
+scVI.ident <- no_uk_ident(scVI.cluster, label)
+
 dt <- which(label=='Unknown')    # 找到标签为Unknown的数据后删除
 ulabel <- label[-dt,]
 predicts <- data.frame(as.numeric(as.factor(ulabel)), # save the idents to cal purity
                   raw.ident, SCDD.ident, Diffusion.ident,
-                  magic.ident, saver.ident, dca.ident)
-write.table(predicts, file='temp/Bone_predicts.tsv', sep='\t')
+                  magic.ident, saver.ident, dca.ident,
+                  DeepImpute.ident, DrImpute.ident, scGNN.ident,
+                  ALRA.ident, scIGANs.ident, scVI.ident)
+write.table(predicts, file='temp/Bone_predicts1.tsv', sep='\t')
 
 
 # raw.cluster <- cluster(raw, label, F)

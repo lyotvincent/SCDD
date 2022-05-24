@@ -27,7 +27,7 @@ def LoadData(expName, dataPath, format="tsv", labelPath=None, needTrans=True, la
         print("Label path:{0}".format(labelPath))
     elif format == "h5ad":
         adata = ad.read_h5ad(dataPath)
-        df = pd.DataFrame(adata.X.todense(),
+        df = pd.DataFrame(adata.X,
                       index=adata.obs_names,
                       columns=adata.var_names,
                       dtype='int')
@@ -149,6 +149,20 @@ def DataSplit(h5adpath, outdir, chunksize=5000):
     # idx = pd.DataFrame(idx)
     # idx.to_csv(outdir + '/idx/chunk{0}_part{1}.txt'.format(chunksize, i), index=False, header=False)
 
+def DataMerge(datadir, imputedir):
+    datas = os.listdir(datadir)
+
+    imputed = os.listdir(imputedir)
+    part = ad.read_h5ad(imputedir + imputed[0])
+    data = ad.read_h5ad(datadir + datas[0])
+    part.obs = data.obs
+    for i in range(1, len(imputed)):
+        print("datai:{0};imputedi:{1}".format(datas[i], imputed[i]))
+        parti = ad.read_h5ad(imputedir + imputed[i])
+        datai = ad.read_h5ad(datadir + datas[i])
+        parti.obs = datai.obs
+        part = ad.concat([part, parti])
+    part.write_h5ad(imputedir + "immune_impute.h5ad")
 
 
 
