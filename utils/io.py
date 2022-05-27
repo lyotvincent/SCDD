@@ -164,6 +164,15 @@ def DataMerge(datadir, imputedir):
         part = ad.concat([part, parti])
     part.write_h5ad(imputedir + "immune_impute_all.h5ad")
 
+def DataMask(dataPath, mask=0.1):
+    df = pd.read_csv(dataPath, sep='\t', index_col=0)
+    rand = np.random.uniform(-mask, 1 - mask, df.shape) > 0
+    mask_df = np.where(rand, df, np.zeros(df.shape))
+    mask_df = pd.DataFrame(mask_df, index=df.index, columns=df.columns)
+    mask_pt = pd.DataFrame(rand, index=df.index, columns=df.columns)
+    mask_df.to_csv("data/mask{0}_".format(mask) + dataPath.split('/')[1], sep='\t', header=True)
+    mask_pt.to_csv("data/maskpt{0}_".format(mask) + dataPath.split('/')[1], sep='\t', header=True)
+
 
 
 
