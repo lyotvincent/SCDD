@@ -226,7 +226,7 @@ def imputeByscGNN(expName, dataPath, labelPath=None, format="tsv"):
                   "--datasetName csvdata " \
                   "--datasetDir ./ " \
                   "--LTMGDir ./ " \
-                  "--outputDir results/scGNN/ " \
+                  "--outputDir temp/scGNN/ " \
                   "--EM-iteration 2 " \
                   "--Regu-epochs 50 " \
                   "--EM-epochs 20 " \
@@ -234,11 +234,11 @@ def imputeByscGNN(expName, dataPath, labelPath=None, format="tsv"):
                   "--nonsparseMode " \
                   "--regulized-type LTMG"
         os.system(ipt_cmd)
-        df = pd.read_csv("results/scGNN/csvdata_recon.csv", index_col=0)
+        df = pd.read_csv("temp/scGNN/csvdata_recon.csv", index_col=0)
         df = np.exp(df) - 1
-        tpfile = os.listdir("results/scGNN")
+        tpfile = os.listdir("temp/scGNN")
         for f in tpfile:
-            os.remove("results/scGNN/" + f)
+            os.remove("temp/scGNN/" + f)
         df.to_csv("results/scGNN/{0}_{1}_impute.tsv".format(expName, modelName), sep='\t', header=True)
         csvfile = os.listdir("csvdata")
         for f in csvfile:

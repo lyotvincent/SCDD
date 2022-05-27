@@ -162,7 +162,7 @@ def DataMerge(datadir, imputedir):
         datai = ad.read_h5ad(datadir + datas[i])
         parti.obs = datai.obs
         part = ad.concat([part, parti])
-    part.write_h5ad(imputedir + "immune_impute.h5ad")
+    part.write_h5ad(imputedir + "immune_impute_all.h5ad")
 
 
 

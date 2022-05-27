@@ -18,14 +18,14 @@ s_dataPath = ['data/liver.raw.tsv',
             'results/scIGANs/liver_scIGANs_impute.tsv',
             'results/DrImpute/liver_DrImpute_impute.tsv',
             'results/DeepImpute/liver_DeepImpute_impute.tsv',
-            'results/scGNN/liver_scGNN_impute.tsv',
+            'results/scVI/liver_scVI_impute.tsv',
             'results/VIPER/liver_VIPER_impute.tsv',
             'results/ALRA/liver_ALRA_impute.tsv']
 
 s_mtName = ['Raw', 'SCDD', 'SCDD(Diffusion)', 'MAGIC',
-          'SAVER', 'DCA', 'scIGANs', 'DrImpute', 'DeepImpute', 'scGNN', 'VIPER', 'ALRA']
+          'SAVER', 'DCA', 'scIGANs', 'DrImpute', 'DeepImpute', 'scVI', 'VIPER', 'ALRA']
 
-labelPath = 'data/liver.stage.txt'
+labelPath = 'data/liver.label.txt'
 label = np.array(pd.read_csv(labelPath, header=None))
 
 def generate_figures(dataPath, label, mtName, layouts, axs, type="paga", gene=None):

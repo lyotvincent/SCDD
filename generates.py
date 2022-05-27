@@ -123,6 +123,8 @@ def Generate_fish(has_results=False):
         dataPath = "data/fish.raw.tsv"
         format = "tsv"
         RunComps(expName, dataPath, labelPath=None, format=format)
+        # scGNN: 192mins
+        # deepimpute: 10min
 
 def Generate_CIDR(has_results=False):
     if has_results == False:
@@ -131,6 +133,13 @@ def Generate_CIDR(has_results=False):
         labelPath = "data/CIDR.label.txt"
         format = "tsv"
         RunComps(expName, dataPath, labelPath, format=format)
+    os.system("Rscript paper/CIDR/CIDR.R")
+    predicts = pd.read_csv("temp/CIDR_predicts1.tsv", sep='\t')
+    perfs = pd.read_csv("temp/CIDR_perfs1.tsv", sep='\t')
+    mcounts = len(perfs) - 1
+    perfs = cal_purity(perfs, predicts, mcounts)
+    perfs.to_csv("paper/CIDR/CIDR_perfs1.tsv", sep='\t')
+    print("Generate CIDR OK.")
 
 def Generate_sc_10x(has_results=False):
     if has_results == False:
@@ -139,6 +148,13 @@ def Generate_sc_10x(has_results=False):
         labelPath = "data/sc_10x.label.txt"
         format = "tsv"
         RunComps(expName, dataPath, labelPath, format=format)
+    os.system("Rscript paper/sc_10x/sc_10x.R")
+    predicts = pd.read_csv("temp/sc_10x_predicts1.tsv", sep='\t')
+    perfs = pd.read_csv("temp/sc_10x_perfs1.tsv", sep='\t')
+    mcounts = len(perfs) - 1
+    perfs = cal_purity(perfs, predicts, mcounts)
+    perfs.to_csv("paper/sc_10x/sc_10x_perfs1.tsv", sep='\t')
+    print("Generate Li OK.")
 
 def Generate_sc_celseq2(has_results=False):
     if has_results == False:
@@ -147,6 +163,13 @@ def Generate_sc_celseq2(has_results=False):
         labelPath = "data/sc_celseq2.label.txt"
         format = "tsv"
         RunComps(expName, dataPath, labelPath, format=format)
+    os.system("Rscript paper/sc_celseq2/sc_celseq2.R")
+    predicts = pd.read_csv("temp/sc_celseq2_predicts1.tsv", sep='\t')
+    perfs = pd.read_csv("temp/sc_celseq2_perfs1.tsv", sep='\t')
+    mcounts = len(perfs) - 1
+    perfs = cal_purity(perfs, predicts, mcounts)
+    perfs.to_csv("paper/sc_celseq2/sc_celseq2_perfs1.tsv", sep='\t')
+    print("Generate Li OK.")
 
 def Generate_sc_dropseq(has_results=False):
     if has_results == False:
@@ -155,8 +178,15 @@ def Generate_sc_dropseq(has_results=False):
         labelPath = "data/sc_dropseq.label.txt"
         format = "tsv"
         RunComps(expName, dataPath, labelPath, format=format)
+    os.system("Rscript paper/sc_dropseq/sc_dropseq.R")
+    predicts = pd.read_csv("temp/sc_dropseq_predicts1.tsv", sep='\t')
+    perfs = pd.read_csv("temp/sc_dropseq_perfs1.tsv", sep='\t')
+    mcounts = len(perfs) - 1
+    perfs = cal_purity(perfs, predicts, mcounts)
+    perfs.to_csv("paper/sc_dropseq/sc_dropseq_perfs1.tsv", sep='\t')
+    print("Generate Li OK.")
 
 # Generate_CIDR(has_results=False)
-Generate_sc_10x(has_results=False)
-Generate_sc_celseq2(has_results=False)
-Generate_sc_dropseq(has_results=False)
+# Generate_sc_10x(has_results=False)
+Generate_fish(has_results=False)
+# Generate_sc_dropseq(has_results=True)
