@@ -3,25 +3,25 @@
 # All of the results will be saved in `results` fold
 from utils.comps import *
 from utils.purity import cal_purity
-from SCDD_api import *
+# from SCDD_api import *
 import os
 import pandas as pd
 
-def RunComps(expName, dataPath, labelPath=None, format="tsv"):
-    dd = SCDD(expName, raw=dataPath, batch=0, format=format)
+def RunComps(expName, dataPath, labelPath=None, format="tsv", id=0):
+    dd = SCDD(expName, raw=dataPath, id=0, format=format)
     dd.run_Diffusion()
     dd.run(store=True)
-    # imputeByscGNN(expName, dataPath, labelPath, format)
-    # # imputeByscImpute(expName, dataPath, labelPath, format)
-    # # imputeByscTSSR(expName, dataPath, labelPath, format)
-    imputeByDeepImpute(expName, dataPath, labelPath, format)
-    # imputeByscIGANs(expName, dataPath, labelPath, format)
-    imputeByDrImpute(expName, dataPath, labelPath, format)
-    imputeByVIPER(expName, dataPath, labelPath, format)
+    imputeByscGNN(expName, dataPath, labelPath, format, id)
+    # # # imputeByscImpute(expName, dataPath, labelPath, format)
+    # # # imputeByscTSSR(expName, dataPath, labelPath, format)
+    imputeByDeepImpute(expName, dataPath, labelPath, format, id)
+    imputeByscIGANs(expName, dataPath, labelPath, format, id)
+    imputeByDrImpute(expName, dataPath, labelPath, format, id)
+    imputeByVIPER(expName, dataPath, labelPath, format, id)
     imputeByMAGIC(expName, dataPath, labelPath, format)
+    imputeByDCA(expName, dataPath, labelPath, format)
+    imputeByALRA(expName, dataPath, labelPath, format, id)
     imputeBySAVER(expName, dataPath, labelPath, format)
-    imputeByDCA(expName, dataPath, labelPath)
-    imputeByALRA(expName, dataPath, labelPath, format)
 
 
 def Generate_all_imputations():

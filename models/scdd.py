@@ -1,15 +1,18 @@
 import tensorflow as tf
+import pandas as pd
 tf.compat.v1.disable_v2_behavior()
 import numpy as np
 from sklearn.decomposition import PCA
 from tqdm import tqdm
+import random
 
 l = 0
 class SC_Denoising:
-    def __init__(self,data, A, Omega, Target):
+    def __init__(self,data, A, Omega, Target, batch_size=1024):
         global l
         self.l=l
         self.data=np.array(data,dtype=np.float32)
+        self.batch_size = batch_size
         self.Omega=Omega
         self.N = np.sum(Omega > 0)
         self.Target = Target
@@ -26,9 +29,21 @@ class SC_Denoising:
         self.M = np.max(self.factor)
         self.factor = self.factor / self.M
         self.Target = self.Target / np.linalg.norm(self.Target, ord=2, axis=1, keepdims=True)
-        pca = PCA(n_components=0.99,whiten=True)
+        if self.data.shape[0] <= 20000:
+            print("the cells are less than 20000, using PCA with mode 'auto'...")
+            pca = PCA(n_components=0.99,whiten=True)
+        else:
+            print("the cells are more than 20000, using PCA with mode 'arpack'...")
+            pca = PCA(n_components=2500, whiten=True, svd_solver='arpack')
         self.input = pca.fit_transform(self.data)
+
+        # calculate the total batches
+        if self.input.shape[0] < self.batch_size:
+            self.total_batch = 1
+        else:
+            self.total_batch = np.int((self.input.shape[0] - 1) / self.batch_size + 1)
         print(self.input.shape)
+        print("total batch:{0}".format(self.total_batch))
     def bn_layer(self,x, scope, is_training, epsilon=0.001, decay=0.99, reuse=None):
         """
         Performs a batch normalization layer
@@ -76,14 +91,24 @@ class SC_Denoising:
     def build(self):
         global l
         self.x = tf.compat.v1.placeholder(tf.float32, shape=(None, None))
+
+        # if total_batch == 1, load A, Target, Omega as constant to accelerate
+        if self.total_batch == 1:
+            self.a = self.A
+            self.t = self.Target
+            self.o = self.Omega
+        else:
+            self.a = tf.compat.v1.placeholder(tf.float32, shape=(None, None))
+            self.t = tf.compat.v1.placeholder(tf.float32, shape=(None, None))
+            self.o = tf.compat.v1.placeholder(tf.float32, shape=(None, None))
         self.is_training = tf.compat.v1.placeholder(tf.bool)
         self.dropout_rate = tf.compat.v1.placeholder(tf.float32)
         W0 = tf.Variable(tf.random.uniform([self.input.shape[1], 128], minval=-(1.5/(self.input.shape[1]+128))**0.5,maxval=(1.5/(self.input.shape[1]+128))**0.5))
         W1 = tf.Variable(tf.random.uniform([128, 64], minval=-(6/192)**0.5,maxval=(6/192)**0.5))
         W2 = tf.Variable(tf.random.uniform([64, 16], minval=-(6/80)**0.5,maxval=(6/80)**0.5))
-        self.layer1=tf.nn.relu(self.bn_layer_top(tf.matmul(tf.matmul(self.A,self.x),W0),is_training=self.is_training))
-        self.layer2=tf.nn.relu(self.bn_layer_top(tf.matmul(tf.matmul(self.A,self.layer1),W1),is_training=self.is_training))
-        self.z = tf.matmul(tf.matmul(self.A,self.layer2),W2)
+        self.layer1=tf.nn.relu(self.bn_layer_top(tf.matmul(tf.matmul(self.a,self.x),W0),is_training=self.is_training))
+        self.layer2=tf.nn.relu(self.bn_layer_top(tf.matmul(tf.matmul(self.a,self.layer1),W1),is_training=self.is_training))
+        self.z = tf.matmul(tf.matmul(self.a,self.layer2),W2)
         self.embedding = self.z
         self.embedding = self.bn_layer_top(self.embedding,is_training=self.is_training)
         W3 = tf.Variable(tf.random.uniform([16, 64], minval=-(6/80)**0.5,maxval=(6/80)**0.5))
@@ -96,16 +121,61 @@ class SC_Denoising:
         self.layer6 = tf.nn.dropout(self.layer5, rate=self.dropout_rate)
         self.res=tf.sigmoid(tf.matmul(self.layer6,W6))
         self.contractive_loss = tf.reduce_sum(tf.square(tf.gradients(self.z, self.x, stop_gradients = [self.x])))
-        self.real_loss = tf.reduce_mean(tf.reduce_sum(((self.Target-self.res) * self.Omega)**2, axis=1))
-        self.loss = tf.reduce_mean(tf.reduce_sum(((self.Target-self.res))**2, axis=1))+ self.contractive_loss + self.real_loss
+        self.real_loss = tf.reduce_mean(tf.reduce_sum(((self.t-self.res) * self.o)**2, axis=1))
+        self.loss = tf.reduce_mean(tf.reduce_sum(((self.t-self.res))**2, axis=1))+ self.contractive_loss + self.real_loss
         self.opt = tf.compat.v1.train.RMSPropOptimizer(1e-3).minimize(self.loss)
         l +=self.l
-    def train(self,n, label=None):
+
+    def shuffle_set(self):
+        train_row = list(range(self.input.shape[0]))
+        random.shuffle(train_row)
+        return train_row
+
+    def get_batch(self, train_row, now_batch):
+        if now_batch < self.total_batch - 1:
+            batch = train_row[now_batch*self.batch_size:(now_batch+1)*self.batch_size]
+        else:
+            batch = train_row[now_batch*self.batch_size:]
+        cell_batch = self.input[batch]
+        target_batch = self.Target[batch]
+        omega_batch = self.Omega[batch]
+        A_batch = self.A[batch, :]
+        A_batch = A_batch[:, batch]
+        return cell_batch, A_batch, omega_batch, target_batch
+
+    def train(self, n):
         print("Using model:SCDD...")
         for _ in tqdm(range(n)):
-            a,b,c=self.sess.run((self.opt,self.loss,self.contractive_loss),feed_dict={self.x:self.input,self.is_training:True, self.dropout_rate:0.5})
-            # print(b-c,c)
+            if self.total_batch == 1:
+                a,b,c=self.sess.run((self.opt,self.loss,self.contractive_loss),
+                                    feed_dict={self.x:self.input,  self.is_training:True, self.dropout_rate:0.5})
+                # print(b-c,c)
+            else:
+                train_row = self.shuffle_set()
+                for now_batch in range(self.total_batch):
+                    cell_batch, A_batch, omega_batch, target_batch = self.get_batch(train_row, now_batch)
+                    a,b,c=self.sess.run((self.opt,self.loss,self.contractive_loss),
+                                        feed_dict={self.x:cell_batch, self.a:A_batch, self.o:omega_batch,
+                                        self.t:target_batch, self.is_training:True, self.dropout_rate:0.5})
+                    # print(b-c,c)
     def impute(self):
-        res=self.sess.run((self.res),feed_dict={self.x:self.input,self.is_training:False, self.dropout_rate:0})
-        res = np.array(res) * self.factor * self.M
-        return np.array(res)
+        if self.total_batch == 1:
+            result=self.sess.run((self.res),feed_dict={self.x:self.input, self.is_training:False, self.dropout_rate:0})
+        else:
+            reslist = []
+            train_row = self.shuffle_set()
+            s = pd.DataFrame(train_row)
+            s[1] = s.index
+            s.index = s[0]
+            s = s.sort_index()
+            rev_row = list(s[1])
+            for now_batch in range(self.total_batch):
+                cell_batch, A_batch, omega_batch, target_batch = self.get_batch(train_row, now_batch)
+                res=self.sess.run((self.res),feed_dict={self.x:cell_batch, self.a:A_batch, self.o:omega_batch,
+                                                        self.t:target_batch, self.is_training:False, self.dropout_rate:0})
+                reslist.append(res)
+            result = np.vstack(reslist)
+            result = result[rev_row]
+            print(result.shape)
+        result = np.array(result) * self.factor * self.M
+        return np.array(result)

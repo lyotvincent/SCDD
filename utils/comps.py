@@ -58,7 +58,7 @@ def imputeByDCA(expName, dataPath, labelPath=None, format='tsv'):
     print("write DCA successfully!")
 
 # SAVER
-def imputeBySAVER(expName, dataPath, labelPath=None, format="tsv"):
+def imputeBySAVER(expName, dataPath, labelPath=None, format="tsv", id=0):
     try:
         modelName = 'SAVER'
         X, y = LoadData(expName, dataPath, labelPath=labelPath)
@@ -72,14 +72,14 @@ def imputeBySAVER(expName, dataPath, labelPath=None, format="tsv"):
         return (result)
         ''' % (dataPath))
         result = np.array(result)
-        SaveData(expName, modelName, result, needTrans=False)
+        SaveData(expName, modelName, result, needTrans=False, id=0)
         print("write SAVER successfully!")
     except:
         with open('log.txt', 'a+') as f:
             print('write SAVER failed!', file=f)
 
 # DrImpute
-def imputeByDrImpute(expName, dataPath, labelPath=None, format="tsv"):
+def imputeByDrImpute(expName, dataPath, labelPath=None, format="tsv", id=0):
     modelName = 'DrImpute'
     X, y = LoadData(expName, dataPath, labelPath=labelPath)
     try:
@@ -99,14 +99,14 @@ def imputeByDrImpute(expName, dataPath, labelPath=None, format="tsv"):
             return(result)
             ''' % (dataPath))
         result = np.array(result)
-        SaveData(expName, modelName, result, needTrans=False)
+        SaveData(expName, modelName, result, needTrans=False, id=id)
         print("write DrImpute successfully!")
     except:
         with open('log.txt', 'a+') as f:
             print('write DrImpute failed!', file=f)
 
 # VIPER
-def imputeByVIPER(expName, dataPath, labelPath=None, format="tsv", batch=0):
+def imputeByVIPER(expName, dataPath, labelPath=None, format="tsv", id=0):
     try:
         modelName = "VIPER"
         X, y = LoadData(expName, dataPath, labelPath=labelPath)
@@ -120,18 +120,18 @@ def imputeByVIPER(expName, dataPath, labelPath=None, format="tsv", batch=0):
             return (res$imputed)
             ''' % (dataPath))
         result = np.array(result)
-        SaveData(expName, modelName, result, needTrans=False, batch=batch)
+        SaveData(expName, modelName, result, needTrans=False, id=id)
         print("write VIPER successfully!")
     except:
         with open('log.txt', 'a+') as f:
             print('write VIPER failed!', file=f)
 
 # scIGANs
-def imputeByscIGANs(expName, dataPath, labelPath=None, format="tsv", batch=0):
+def imputeByscIGANs(expName, dataPath, labelPath=None, format="tsv", id=0):
     try:
         modelName = "scIGANs"
         X, y = LoadData(expName, dataPath, labelPath=labelPath)
-        cmd = "scIGANs/scIGANs {0} -b {1} -o results/scIGANs -j {2}".format(dataPath, 128, expName+str(batch))
+        cmd = "scIGANs/scIGANs {0} -b {1} -o results/scIGANs -j {2}".format(dataPath, 128, expName+str(id))
         os.system(cmd)
         print("write scIGANs successfully!")
     except:
@@ -139,7 +139,7 @@ def imputeByscIGANs(expName, dataPath, labelPath=None, format="tsv", batch=0):
             print('write scIGANs failed!', file=f)
 
 # DeepImpute
-def imputeByDeepImpute(expName, dataPath, labelPath=None, format="tsv", batch=0):
+def imputeByDeepImpute(expName, dataPath, labelPath=None, format="tsv", id=0):
     try:
         modelName = "DeepImpute"
         X, y = LoadData(expName, dataPath, labelPath=labelPath, format=format)
@@ -147,7 +147,7 @@ def imputeByDeepImpute(expName, dataPath, labelPath=None, format="tsv", batch=0)
         model = MultiNet()
         model.fit(data)
         result = model.predict(data)
-        SaveData(expName, modelName, result, batch=batch)
+        SaveData(expName, modelName, result, id=id)
         print("write DeepImpute successfully!")
     except:
         with open('log.txt', 'a+') as f:
@@ -204,7 +204,7 @@ def imputeByscImpute(expName, dataPath, labelPath=None, format="tsv"):
             print('write scImpute failed!', file=f)
 
 # scGNN
-def imputeByscGNN(expName, dataPath, labelPath=None, format="tsv", batch=0):
+def imputeByscGNN(expName, dataPath, labelPath=None, format="tsv", id=0):
     try:
         modelName = "scGNN"
         if not os.path.isdir("csvdata"):
@@ -240,7 +240,7 @@ def imputeByscGNN(expName, dataPath, labelPath=None, format="tsv", batch=0):
         tpfile = os.listdir("temp/scGNN")
         for f in tpfile:
             os.remove("temp/scGNN/" + f)
-        df.to_csv("results/scGNN/{0}_{1}{2}_impute.tsv".format(expName, modelName, batch), sep='\t', header=True)
+        df.to_csv("results/scGNN/{0}_{1}{2}_impute.tsv".format(expName, modelName, id), sep='\t', header=True)
         csvfile = os.listdir("csvdata")
         for f in csvfile:
             os.remove("csvdata/" + f)
@@ -257,7 +257,7 @@ def imputeByEnImpute(expName, dataPath, labelPath=None, format="tsv"):
 
 
 # ALRA
-def imputeByALRA(expName, dataPath, labelPath=None, format="tsv", batch=0):
+def imputeByALRA(expName, dataPath, labelPath=None, format="tsv", id=0):
     modelName = "ALRA"
     try:
         X, y = LoadData(expName, dataPath, labelPath=labelPath)
@@ -273,7 +273,7 @@ def imputeByALRA(expName, dataPath, labelPath=None, format="tsv", batch=0):
                 return(A_norm_completed)
                     ''' % (dataPath))
         result = np.array(result)
-        SaveData(expName, modelName, result, needTrans=True, batch=batch)
+        SaveData(expName, modelName, result, needTrans=True, id=id)
         print("write ALRA successfully!")
     except:
         with open('log.txt', 'a+') as f:

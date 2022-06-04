@@ -62,7 +62,7 @@ def LoadData(expName, dataPath, format="tsv", labelPath=None, needTrans=True, la
     return train_data, label
 
 
-def SaveData(expName, modelName, result, format="tsv", needTrans=True, batch = None):
+def SaveData(expName, modelName, res, format="tsv", needTrans=True, id = None):
     """
     This function will call `impute' member in model and save the result,
         which will use global cells and genes.
@@ -71,19 +71,18 @@ def SaveData(expName, modelName, result, format="tsv", needTrans=True, batch = N
     :param needTrans:  if true, transpose the origin data.
     :param expName:  the experiment name
     :param modelName:  the model name
-    :param result:  impute result
+    :param res:  impute result
     """
     if os.path.isdir("results") == False:
         os.makedirs("results")
     dir = "results/"+ modelName
     if os.path.isdir(dir) == False:
         os.makedirs(dir)
-    Batch = str("")
-    if batch:
-        Batch = str(batch)
-    res = result
+    ID = str("")
+    if id:
+        ID = str(id)
     if format == "tsv":
-        path = dir + "/" + expName + "_" + modelName + Batch + "_impute.tsv"
+        path = dir + "/" + expName + "_" + modelName + ID + "_impute.tsv"
         if needTrans:
             res = pd.DataFrame(res.transpose())
         else:
@@ -93,8 +92,8 @@ def SaveData(expName, modelName, result, format="tsv", needTrans=True, batch = N
         res.to_csv(path, sep='\t')
         print("Write to {0} successfully!".format(path))
     elif format == "h5ad":
-        path = dir + "/" + expName + "_" + modelName + Batch + "_impute.h5ad"
-        adata = ad.AnnData(X=res, obs=pd.DataFrame(index=genes), var=pd.DataFrame(index=cells))
+        path = dir + "/" + expName + "_" + modelName + ID + "_impute.h5ad"
+        adata = ad.AnnData(X=res, obs=pd.DataFrame(index=cells), var=pd.DataFrame(index=genes))
         adata.write_h5ad(path)
         print("Write to {0} successfully!".format(path))
 

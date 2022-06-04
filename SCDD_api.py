@@ -7,22 +7,24 @@ modelName = "SCDD"
 
 class SCDD:
     def __init__(self, name=None, raw=None, label=None,
-                 Tran=True, batch=None, dropout=True,
-                 method="TFIDF", filter=True, format="tsv", conservative=False, neighbors=10, threshold=0.2):
+                 Tran=True, id=None, dropout=True,
+                 method="TFIDF", filter=True, format="tsv", conservative=False,
+                 neighbors=20, threshold=0.2, batch_size=1024):
         self.name = name
         self.raw = raw
         self.label = label
         self.Tran = Tran
         self.log_data = None
         self.data = None
-        self.batch = batch
+        self.id = id
         self.dropout = dropout
         self.filter = filter
         self.format = format
         self.method = method
         self.conservative = conservative
         self.neighbors = neighbors
-        self.threshold=threshold
+        self.threshold = threshold
+        self.batch_size = batch_size
         if self.name == "Cellcycle":
             self.raw = "data/Cellcycle.raw.txt"
             self.label = "data/Cellcycle.label.txt"
@@ -80,7 +82,7 @@ class SCDD:
             dropout_rate, null_genes = get_dropout_rate(self.log_data)
             Omega, Target = get_supervise(self.log_data , dropout_rate, null_genes, M, self.neighbors, self.threshold)
             SaveTargets(M, Omega, Target, dropout_rate, null_genes)
-        md = SC_Denoising(self.log_data, A, Omega, Target)
+        md = SC_Denoising(self.log_data, A, Omega, Target, batch_size=self.batch_size)
         md.train(2000)
         self.result = md.impute()
         self.result, self.cresult = makeup_results_all(self.result, self.log_data, null_genes, dropout_rate, self.threshold)
@@ -88,8 +90,8 @@ class SCDD:
         self.result = self.result.astype(np.int)
         self.cresult = np.exp(self.cresult) - 1.01 + 0.5
         self.cresult = self.cresult.astype(np.int)
-        SaveData(self.name, modelName, self.result, format=self.format, batch=self.batch)
-        SaveData(self.name, modelName, self.cresult, format=self.format, batch=self.batch+1)
+        SaveData(self.name, modelName, self.result, format=self.format, id=self.id)
+        SaveData(self.name, modelName, self.cresult, format=self.format, id=self.id+1)
     
     def run_Diffusion(self, store = False):
         self.data, self.Label = LoadData(self.name, self.raw,

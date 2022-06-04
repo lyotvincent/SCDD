@@ -184,7 +184,7 @@ scVI.cst <- Li.cst(scVI.path)
 VIPER.cst <- Li.cst(VIPER.path)
 
 predicts <- data.frame(as.numeric(as.factor(cluster[,1])), 
-                 Idents(raw.cst), Idents(SCDD.cst), Idents(Diffusion.cst), 
+                 Idents(raw.cst), Idents(SCDD.cst), Idents(Diffusion.cst), Idents(scIGANs.cst), 
                  Idents(magic.cst), Idents(saver.cst), Idents(dca.cst),
                  Idents(DeepImpute.cst), Idents(DrImpute.cst), Idents(scGNN.cst),
                  Idents(ALRA.cst), Idents(scVI.cst), Idents(VIPER.cst))

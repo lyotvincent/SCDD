@@ -69,7 +69,7 @@ def RobjSNN(train_data: np.array) -> np.array:
         seu <- FindNeighbors(seu, reduction="pca", dims = 1:30)
         con <- as.matrix(seu@graphs$RNA_snn)
         return (con)
-        ''' % (train_data.shape[0], train_data.shape[1]))
+        ''' )
     M = np.array(M)
     return M
 
