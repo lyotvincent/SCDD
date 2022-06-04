@@ -8,7 +8,7 @@ modelName = "SCDD"
 class SCDD:
     def __init__(self, name=None, raw=None, label=None,
                  Tran=True, batch=None, dropout=True,
-                 method="TFIDF", filter=True, format="tsv", conservative=False):
+                 method="TFIDF", filter=True, format="tsv", conservative=False, neighbors=10, threshold=0.2):
         self.name = name
         self.raw = raw
         self.label = label
@@ -21,6 +21,8 @@ class SCDD:
         self.format = format
         self.method = method
         self.conservative = conservative
+        self.neighbors = neighbors
+        self.threshold=threshold
         if self.name == "Cellcycle":
             self.raw = "data/Cellcycle.raw.txt"
             self.label = "data/Cellcycle.label.txt"
@@ -69,17 +71,19 @@ class SCDD:
                                          needTrans=self.Tran)
         self.log_data = np.log(self.data + 1.01)
         A = getA(self.data, method=self.method, filter=self.filter)
+        print("Using neighbors:{0}.".format(self.neighbors))
+        print("Using threshold:{0}.".format(self.threshold))
         if store:
             M, Omega, Target, dropout_rate, null_genes = LoadTargets()
         else:
             M = RobjKmeans(self.data)
             dropout_rate, null_genes = get_dropout_rate(self.log_data)
-            Omega, Target = get_supervise(self.log_data , dropout_rate, null_genes, M)
+            Omega, Target = get_supervise(self.log_data , dropout_rate, null_genes, M, self.neighbors, self.threshold)
             SaveTargets(M, Omega, Target, dropout_rate, null_genes)
         md = SC_Denoising(self.log_data, A, Omega, Target)
         md.train(2000)
         self.result = md.impute()
-        self.result, self.cresult = makeup_results_all(self.result, self.log_data, null_genes, dropout_rate)
+        self.result, self.cresult = makeup_results_all(self.result, self.log_data, null_genes, dropout_rate, self.threshold)
         self.result = np.exp(self.result) - 1.01 + 0.5
         self.result = self.result.astype(np.int)
         self.cresult = np.exp(self.cresult) - 1.01 + 0.5
@@ -101,7 +105,7 @@ class SCDD:
             Omega, Target = get_supervise(self.log_data , dropout_rate, null_genes, M)
             SaveTargets(M, Omega, Target, dropout_rate, null_genes)
         self.result = Target
-        self.result = makeup_results(self.result, self.log_data, null_genes, dropout_rate)
+        self.result = makeup_results(self.result, self.log_data, null_genes, dropout_rate, self.threshold)
         self.result = np.exp(self.result) - 1
         self.result = np.round(self.result)
         self.result[self.result < 0] = 0

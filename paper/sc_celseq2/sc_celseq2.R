@@ -114,6 +114,7 @@ sc_celseq2.cstcomp <- function(cst){
 raw.path <- paste0("data/sc_celseq2.raw.tsv")
 SCDD.path <- paste0("results/SCDD/sc_celseq2_SCDD1_impute.tsv")
 Diffusion.path <- paste0("results/Diffusion/sc_celseq2_Diffusion_impute.tsv")
+scIGANs.path <- paste0("results/scIGANs/sc_celseq2_scIGANs_impute.tsv")
 magic.path <- paste0("results/MAGIC/sc_celseq2_MAGIC_impute.tsv")
 saver.path <- paste0("results/SAVER/sc_celseq2_SAVER_impute.tsv")
 dca.path <- paste0("results/DCA/sc_celseq2_DCA_impute.tsv")
@@ -128,6 +129,7 @@ scVI.path <- paste0("results/scVI/sc_celseq2_scVI_impute.tsv")
 raw.st <- sc_celseq2.st(raw.path)
 SCDD.st <- sc_celseq2.st(SCDD.path)
 Diffusion.st <- sc_celseq2.st(Diffusion.path)
+scIGANs.st <- sc_celseq2.st(scIGANs.path)
 magic.st <- sc_celseq2.st(magic.path)
 saver.st <- sc_celseq2.st(saver.path)
 dca.st <- sc_celseq2.st(dca.path)
@@ -141,6 +143,7 @@ VIPER.st <- sc_celseq2.st(VIPER.path)
 raw.umap <- sc_celseq2.umap(raw.st, "Raw")
 SCDD.umap <- sc_celseq2.umap(SCDD.st, "SCDD")
 Diffusion.umap <- sc_celseq2.umap(Diffusion.st, "SCDD(Diffusion)")
+scIGANs.umap <- sc_celseq2.umap(Diffusion.st, "scIGANs")
 magic.umap <- sc_celseq2.umap(magic.st, "MAGIC")
 saver.umap <- sc_celseq2.umap(saver.st, "SAVER")
 dca.umap <- sc_celseq2.umap(dca.st, "DCA")
@@ -151,11 +154,15 @@ ALRA.umap <- sc_celseq2.umap(ALRA.st, "ALRA")
 scVI.umap <- sc_celseq2.umap(scVI.st, "scVI")
 VIPER.umap <- sc_celseq2.umap(VIPER.st, "VIPER")
 
-pdf("paper/sc_celseq2/sc_celseq2_umap1.pdf", 12, 12)
-ggarrange(raw.umap, SCDD.umap, Diffusion.umap, magic.umap,
-             saver.umap, dca.umap, DeepImpute.umap, DrImpute.umap,
-              scGNN.umap, ALRA.umap, scVI.umap, VIPER.umap,
-              ncol = 3, nrow = 4, common.legend=T, legend="bottom")
+pdf("paper/sc_celseq2/sc_celseq2_umap31.pdf", 9, 3.5)
+ggarrange(raw.umap, SCDD.umap, Diffusion.umap, 
+          ncol = 3, nrow = 1, common.legend=T, legend="none")
+dev.off()
+
+svg("paper/sc_celseq2/sc_celseq2_umap32.svg", 15, 7.5)
+ggarrange(saver.umap, DeepImpute.umap, DrImpute.umap, scIGANs.umap, VIPER.umap,
+          scGNN.umap, magic.umap, dca.umap, ALRA.umap, scVI.umap,
+          ncol = 5, nrow = 2, common.legend=T, legend="bottom")
 dev.off()
 
 # run Seurat's cluster and save the Idents

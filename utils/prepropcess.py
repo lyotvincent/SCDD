@@ -49,6 +49,31 @@ def RobjKmeans(train_data: np.array) -> np.array:
     M = np.array(M)
     return M
 
+def RobjSNN(train_data: np.array) -> np.array:
+    np.savetxt('temp/train_data.txt', train_data, fmt="%f," * len(train_data[0]))
+    print("Converted data to R-object and start R-engine...")
+    M = robjects.r('''
+        library('Seurat')
+        library(SeuratObject)
+        library(data.table)
+        a<-fread('temp/train_data.txt', sep=',', header=T)
+        cells <- a[[1]]
+        a <- a[,-1]
+        tp <-t(a)
+        colnames(tp) <- cells
+        seu <- CreateSeuratObject(tp)
+        seu <- NormalizeData(seu, normalization.method = "LogNormalize", scale.factor = 10000)
+        seu <- FindVariableFeatures(seu, selection.method = "vst", nfeatures = 10000)
+        seu <- ScaleData(seu, features = VariableFeatures(seu))
+        seu <- RunPCA(seu, features = VariableFeatures(object = seu), dims=1:100)
+        seu <- FindNeighbors(seu, reduction="pca", dims = 1:30)
+        con <- as.matrix(seu@graphs$RNA_snn)
+        return (con)
+        ''' % (train_data.shape[0], train_data.shape[1]))
+    M = np.array(M)
+    return M
+
+
 # calculate the q()
 def calculate_weight(xdata, params):
     rate, alpha, scale = params[0], params[1], 1 / params[2]
@@ -175,7 +200,7 @@ def get_dropout_rate(count, point = np.log(1.01)):
 
 
 # Obtain the input items and supervision items for denoising
-def get_supervise(data,dropout,null_genes, M):
+def get_supervise(data,dropout,null_genes, M, neighbornum=10, threshold=0.2):
     nullarg = null_genes
     data = np.delete(data, nullarg, axis=1)
     data1 = data
@@ -184,39 +209,39 @@ def get_supervise(data,dropout,null_genes, M):
     # In the M matrix, the larger the value, the more similar the description is
     dist = np.array(M)
     neibor = np.argsort(-dist, axis=1)
-    neibor_data = map(lambda i:np.mean(data[neibor[i, 1:13]], axis=0), range(len(neibor)))
+    neibor_data = map(lambda i:np.mean(data[neibor[i, 1:neighbornum]], axis=0), range(len(neibor)))
     neibor_data = list(neibor_data)
     for i in tqdm(range(data.shape[0])):
         for j in range(data.shape[1]):
-            if dropout[i][j] > 0.2: 
+            if dropout[i][j] > threshold:
                 data[i][j] = dropout[i][j] * neibor_data[i][j] + (1 - dropout[i][j]) * data[i][j]
                 Omega[i][j] = 0.5
     return Omega, data1
 
 
 # Complete the matrix after neural network training
-def makeup_results(result, data, null_genes, dropout, conservative=False):
+def makeup_results(result, data, null_genes, dropout, conservative=False, threshold=0.2):
     colarg = range(data.shape[1])
     nullarg = null_genes.flatten()
     validarg = list(set(colarg) - set(nullarg))
     for i in range(result.shape[0]):
         for j in range(result.shape[1]):
             if conservative:
-                if dropout[i, validarg[j]] > 0.2:
+                if dropout[i, validarg[j]] > threshold:
                     data[i, validarg[j]] = result[i][j]
             elif dropout[i, validarg[j]] > 0:
                 data[i, validarg[j]] = result[i][j]
     return data
 
 # Complete the matrix after neural network training for two results
-def makeup_results_all(result, data, null_genes, dropout):
+def makeup_results_all(result, data, null_genes, dropout, threshold=0.2):
     colarg = range(data.shape[1])
     nullarg = null_genes.flatten()
     validarg = list(set(colarg) - set(nullarg))
     cdata = np.array(data, copy = True)
     for i in range(result.shape[0]):
         for j in range(result.shape[1]):
-            if dropout[i, validarg[j]] > 0.2:
+            if dropout[i, validarg[j]] > threshold:
                 cdata[i, validarg[j]] = result[i][j]
             data[i, validarg[j]] = result[i][j]
     return data, cdata

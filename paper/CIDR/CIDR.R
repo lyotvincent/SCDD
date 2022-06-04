@@ -114,6 +114,7 @@ CIDR.cstcomp <- function(cst){
 raw.path <- paste0("data/CIDR.raw.tsv")
 SCDD.path <- paste0("results/SCDD/CIDR_SCDD1_impute.tsv")
 Diffusion.path <- paste0("results/Diffusion/CIDR_Diffusion_impute.tsv")
+scIGANs.path <- paste0("results/scIGANs/CIDR_scIGANs_impute.tsv")
 magic.path <- paste0("results/MAGIC/CIDR_MAGIC_impute.tsv")
 saver.path <- paste0("results/SAVER/CIDR_SAVER_impute.tsv")
 dca.path <- paste0("results/DCA/CIDR_DCA_impute.tsv")
@@ -127,6 +128,7 @@ scVI.path <- paste0("results/scVI/CIDR_scVI_impute.tsv")
 # run Seurat's umap and visualization
 raw.st <- CIDR.st(raw.path)
 SCDD.st <- CIDR.st(SCDD.path)
+scIGANs.st <- CIDR.st(scIGANs.path)
 Diffusion.st <- CIDR.st(Diffusion.path)
 magic.st <- CIDR.st(magic.path)
 saver.st <- CIDR.st(saver.path)
@@ -141,6 +143,7 @@ VIPER.st <- CIDR.st(VIPER.path)
 raw.umap <- CIDR.umap(raw.st, "Raw")
 SCDD.umap <- CIDR.umap(SCDD.st, "SCDD")
 Diffusion.umap <- CIDR.umap(Diffusion.st, "SCDD(Diffusion)")
+scIGANs.umap <- CIDR.umap(Diffusion.st, "scIGANs")
 magic.umap <- CIDR.umap(magic.st, "MAGIC")
 saver.umap <- CIDR.umap(saver.st, "SAVER")
 dca.umap <- CIDR.umap(dca.st, "DCA")
@@ -151,11 +154,15 @@ ALRA.umap <- CIDR.umap(ALRA.st, "ALRA")
 scVI.umap <- CIDR.umap(scVI.st, "scVI")
 VIPER.umap <- CIDR.umap(VIPER.st, "VIPER")
 
-pdf("paper/CIDR/CIDR_umap1.pdf", 12, 12)
-ggarrange(raw.umap, SCDD.umap, Diffusion.umap, magic.umap,
-             saver.umap, dca.umap, DeepImpute.umap, DrImpute.umap,
-              scGNN.umap, ALRA.umap, scVI.umap, VIPER.umap,
-              ncol = 3, nrow = 4, common.legend=T, legend="bottom")
+pdf("paper/CIDR/CIDR_umap31.pdf", 9, 3.5)
+ggarrange(raw.umap, SCDD.umap, Diffusion.umap, 
+          ncol = 3, nrow = 1, common.legend=T, legend="none")
+dev.off()
+
+svg("paper/CIDR/CIDR_umap32.svg", 15, 7.5)
+ggarrange(saver.umap, DeepImpute.umap, DrImpute.umap, scIGANs.umap, VIPER.umap,
+          scGNN.umap, magic.umap, dca.umap, ALRA.umap, scVI.umap,
+          ncol = 5, nrow = 2, common.legend=T, legend="bottom")
 dev.off()
 
 # run Seurat's cluster and save the Idents
@@ -183,6 +190,7 @@ write.table(predicts, file='temp/CIDR_predicts1.tsv', sep='\t')
 raw.cluster <- CIDR.cluster(raw.cst, "Raw")
 SCDD.cluster <- CIDR.cluster(SCDD.cst, "SCDD")
 Diffusion.cluster <- CIDR.cluster(Diffusion.cst, "SCDD(Diffusion)")
+scIGANs.cluster <- CIDR.cluster(Diffusion.cst, "SCDD(Diffusion)")
 magic.cluster <- CIDR.cluster(magic.cst, "MAGIC")
 saver.cluster <- CIDR.cluster(saver.cst, "SAVER")
 dca.cluster <- CIDR.cluster(dca.cst, "DCA")

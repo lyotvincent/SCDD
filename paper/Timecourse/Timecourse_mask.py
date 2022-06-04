@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-import os
 import matplotlib.pyplot as plt
 from matplotlib import rcParams
 import scanpy as sc
@@ -9,24 +8,22 @@ sc.settings.verbosity = 3             # verbosity: errors (0), warnings (1), inf
 sc.logging.print_header()
 sc.settings.set_figure_params(dpi=80, facecolor='white')
 
-s_dataPath = ['data/liver.raw.tsv',
-            'results/SCDD/liver_SCDD_impute.tsv',
-            'results/Diffusion/liver_Diffusion_impute.tsv',
-            'results/scIGANs/liver_scIGANs_impute.tsv',
-            'results/VIPER/liver_VIPER_impute.tsv',
-            'results/SAVER/liver_SAVER_impute.tsv',
-            'results/DCA/liver_DCA_impute.tsv',
-            'results/scVI/liver_scVI_impute.tsv',
-            'results/DrImpute/liver_DrImpute_impute.tsv',
-            'results/DeepImpute/liver_DeepImpute_impute.tsv',
-            'results/scGNN/liver_scGNN_impute.tsv',
-            'results/MAGIC/liver_MAGIC_impute.tsv',
-            'results/ALRA/liver_ALRA_impute.tsv']
 
-s_mtName = ['Raw', 'SCDD', 'SCDD(Diffusion)', 'scIGANs', 'VIPER',
-          'SAVER', 'DCA', 'scVI', 'DrImpute', 'DeepImpute', 'scGNN', 'MAGIC', 'ALRA']
+mask_dataPath = ['data/Timecourse.raw.tsv',
+              'data/mask0.1_Timecourse.raw.tsv',
+              'data/mask0.2_Timecourse.raw.tsv',
+              'data/mask0.3_Timecourse.raw.tsv',
+              'data/mask0.4_Timecourse.raw.tsv',
+              'results/SCDD/Timecourse_SCDD_impute.tsv',
+              'results/SCDD/mask0.1Timecourse_SCDD1_impute.tsv',
+              'results/SCDD/mask0.2Timecourse_SCDD1_impute.tsv',
+              'results/SCDD/mask0.3Timecourse_SCDD1_impute.tsv',
+              'results/SCDD/mask0.4Timecourse_SCDD1_impute.tsv']
 
-labelPath = 'data/liver.label.txt'
+mask_mtName = ['Raw', 'mask 10%', 'mask 20%', 'mask 30%', 'mask 40%',
+               'SCDD', 'SCDD 10%', 'SCDD 20%', 'SCDD 30%', 'SCDD 40%']
+
+labelPath = 'data/Timecourse.label.txt'
 label = np.array(pd.read_csv(labelPath, header=None))
 
 def generate_figures(dataPath, label, mtName, layouts, axs, type="paga", gene=None):
@@ -51,7 +48,7 @@ def generate_figures(dataPath, label, mtName, layouts, axs, type="paga", gene=No
                 sc.tl.pca(adata, svd_solver='arpack')
                 sc.pp.neighbors(adata, n_neighbors=4, n_pcs=20)
                 sc.tl.paga(adata, groups='label')
-                sc.pl.paga(adata, threshold=0.07, cmap='gist_rainbow', show=False, fontsize=12, ax=axs[i],
+                sc.pl.paga(adata, threshold=None, cmap='gist_rainbow', show=False, fontsize=12, ax=axs[i],
                            title=mtName[i])
             elif type == "umap":
                 sc.pp.filter_genes(adata, min_counts=1)
@@ -59,7 +56,7 @@ def generate_figures(dataPath, label, mtName, layouts, axs, type="paga", gene=No
                 sc.tl.pca(adata, svd_solver='arpack')
                 sc.pp.neighbors(adata, n_neighbors=4, n_pcs=20)
                 sc.tl.paga(adata, groups='label')
-                sc.pl.paga(adata, threshold=0.07, cmap='gist_rainbow', show=False, fontsize=12,
+                sc.pl.paga(adata, threshold=None, cmap='gist_rainbow', show=False, fontsize=12,
                            title=mtName[i])
                 sc.tl.draw_graph(adata, init_pos='paga')
                 sc.pl.draw_graph(adata, color='label', legend_loc='on data', ax=axs[i], show=False,
@@ -92,14 +89,14 @@ def generate_figures(dataPath, label, mtName, layouts, axs, type="paga", gene=No
                     sc.tl.pca(adata, svd_solver='arpack')
                     sc.pp.neighbors(adata, n_neighbors=4, n_pcs=20)
                     sc.tl.paga(adata, groups='label')
-                    sc.pl.paga(adata, threshold=0.07, cmap='gist_rainbow',show=False, fontsize=12, ax=axs[i, j], title=mtName[cols*i+j])
+                    sc.pl.paga(adata, threshold=None, cmap='gist_rainbow',show=False, fontsize=12, ax=axs[i, j], title=mtName[cols*i+j])
                 elif type == "umap":
                     sc.pp.filter_genes(adata, min_counts=1)
                     sc.pp.recipe_zheng17(adata)
                     sc.tl.pca(adata, svd_solver='arpack')
                     sc.pp.neighbors(adata, n_neighbors=4, n_pcs=20)
                     sc.tl.paga(adata, groups='label')
-                    sc.pl.paga(adata, threshold=0.07, cmap='gist_rainbow', show=False, fontsize=12,
+                    sc.pl.paga(adata, threshold=None, cmap='gist_rainbow', show=False, fontsize=12,
                                title=mtName[cols * i + j])
                     sc.tl.draw_graph(adata, init_pos='paga')
                     sc.pl.draw_graph(adata, color='label', legend_loc='on data', ax=axs[i, j], show=False,
@@ -111,19 +108,22 @@ def generate_figures(dataPath, label, mtName, layouts, axs, type="paga", gene=No
                     sc.pl.violin(adata, groupby='label', keys=[gene], ax=axs[i, j], show=False, stripplot=False, ylabel=gene)
                     axs[i, j].title.set_text(mtName[cols*i+j])
 
-# # plot for paga
-# fige, axse = plt.subplots(1, 3, figsize=(9,3),constrained_layout=True)
-# generate_figures(s_dataPath[:3], label, s_mtName[:3], (1, 3), axse, type="paga")
-# fige.savefig("paper/liver/liver_paga31.pdf")
+# figa, axsa = plt.subplots(2, 5, figsize=(15,6),constrained_layout=True)
+# generate_figures(mask_dataPath, label, mask_mtName, (2, 5), axsa, type="paga")
+# figa.savefig("paper/Timecourse/Timecourse_mask_paga.pdf")
+
+# figa, axsa = plt.subplots(2, 5, figsize=(15,6),constrained_layout=True)
+# generate_figures(mask_dataPath, label, mask_mtName, (2, 5), axsa, type="umap")
+# figa.savefig("paper/Timecourse/Timecourse_mask_umap.pdf")
 #
-# fige, axse = plt.subplots(2, 5, figsize=(15,6),constrained_layout=True)
-# generate_figures(s_dataPath[3:], label, s_mtName[3:], (2, 5), axse, type="paga")
-# fige.savefig("paper/liver/liver_paga32.pdf")
+# figa, axsa = plt.subplots(2, 5, figsize=(15,6),constrained_layout=True)
+# generate_figures(mask_dataPath, label, mask_mtName, (2, 5), axsa, type="violin", gene='NANOG')
+# figa.savefig("paper/Timecourse/Timecourse_mask_NANOG.pdf")
 
-fige, axse = plt.subplots(1, 3, figsize=(9,3),constrained_layout=True)
-generate_figures(s_dataPath[:3], label, s_mtName[:3], (1, 3), axse, type="umap")
-fige.savefig("paper/liver/liver_umap31.pdf")
+figa, axsa = plt.subplots(2, 5, figsize=(15,6),constrained_layout=True)
+generate_figures(mask_dataPath, label, mask_mtName, (2, 5), axsa, type="violin", gene='SOX2')
+figa.savefig("paper/Timecourse/Timecourse_mask_SOX2.pdf")
 
-fige, axse = plt.subplots(2, 5, figsize=(15,6),constrained_layout=True)
-generate_figures(s_dataPath[3:], label, s_mtName[3:], (2, 5), axse, type="umap")
-fige.savefig("paper/liver/liver_umap32.pdf")
+figa, axsa = plt.subplots(2, 5, figsize=(15,6),constrained_layout=True)
+generate_figures(mask_dataPath, label, mask_mtName, (2, 5), axsa, type="violin", gene='CER1')
+figa.savefig("paper/Timecourse/Timecourse_mask_CER1.pdf")

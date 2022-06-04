@@ -114,6 +114,7 @@ sc_dropseq.cstcomp <- function(cst){
 raw.path <- paste0("data/sc_dropseq.raw.tsv")
 SCDD.path <- paste0("results/SCDD/sc_dropseq_SCDD_impute.tsv")
 Diffusion.path <- paste0("results/Diffusion/sc_dropseq_Diffusion_impute.tsv")
+scIGANs.path <- paste0("results/scIGANs/sc_dropseq_scIGANs_impute.tsv")
 magic.path <- paste0("results/MAGIC/sc_dropseq_MAGIC_impute.tsv")
 saver.path <- paste0("results/SAVER/sc_dropseq_SAVER_impute.tsv")
 dca.path <- paste0("results/DCA/sc_dropseq_DCA_impute.tsv")
@@ -128,6 +129,7 @@ scVI.path <- paste0("results/scVI/sc_dropseq_scVI_impute.tsv")
 raw.st <- sc_dropseq.st(raw.path)
 SCDD.st <- sc_dropseq.st(SCDD.path)
 Diffusion.st <- sc_dropseq.st(Diffusion.path)
+scIGANs.st <- sc_dropseq.st(scIGANs.path)
 magic.st <- sc_dropseq.st(magic.path)
 saver.st <- sc_dropseq.st(saver.path)
 dca.st <- sc_dropseq.st(dca.path)
@@ -141,6 +143,7 @@ VIPER.st <- sc_dropseq.st(VIPER.path)
 raw.umap <- sc_dropseq.umap(raw.st, "Raw")
 SCDD.umap <- sc_dropseq.umap(SCDD.st, "SCDD")
 Diffusion.umap <- sc_dropseq.umap(Diffusion.st, "SCDD(Diffusion)")
+scIGANs.umap <- sc_dropseq.umap(scIGANs.st, "scIGANs")
 magic.umap <- sc_dropseq.umap(magic.st, "MAGIC")
 saver.umap <- sc_dropseq.umap(saver.st, "SAVER")
 dca.umap <- sc_dropseq.umap(dca.st, "DCA")
@@ -151,12 +154,17 @@ ALRA.umap <- sc_dropseq.umap(ALRA.st, "ALRA")
 scVI.umap <- sc_dropseq.umap(scVI.st, "scVI")
 VIPER.umap <- sc_dropseq.umap(VIPER.st, "VIPER")
 
-pdf("paper/sc_dropseq/sc_dropseq_umap1.pdf", 12, 13)
-ggarrange(raw.umap, SCDD.umap, Diffusion.umap, magic.umap,
-             saver.umap, dca.umap, DeepImpute.umap, DrImpute.umap,
-              scGNN.umap, ALRA.umap, scVI.umap, VIPER.umap,
-              ncol = 3, nrow = 4, common.legend=T, legend="bottom")
+pdf("paper/sc_dropseq/sc_dropseq_umap31.pdf", 9, 3.5)
+ggarrange(raw.umap, SCDD.umap, Diffusion.umap, 
+          ncol = 3, nrow = 1, common.legend=T, legend="none")
 dev.off()
+
+svg("paper/sc_dropseq/sc_dropseq_umap32.svg", 15, 7.5)
+ggarrange(saver.umap, DeepImpute.umap, DrImpute.umap, scIGANs.umap, VIPER.umap,
+          scGNN.umap, magic.umap, dca.umap, ALRA.umap, scVI.umap,
+          ncol = 5, nrow = 2, common.legend=T, legend="bottom")
+dev.off()
+
 
 # run Seurat's cluster and save the Idents
 raw.cst <- sc_dropseq.cst(raw.path)

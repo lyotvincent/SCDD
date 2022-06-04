@@ -77,7 +77,7 @@ st_genes <- read.table("data/ID.map.txt", sep = '\t',  header = FALSE)
 st_genes <- st_genes[, 1:2]
 
 raw.path <- "data/Cellcycle.raw.txt"
-SCDD.path <- "results/SCDD/Cellcycle_SCDD_impute.tsv"
+SCDD.path <- "results/SCDD/Cellcycle_SCDD_SNN_batch_impute.tsv"
 Diffusion.path <- "results/Diffusion/Cellcycle_Diffusion_impute.tsv"
 magic.path <- "results/MAGIC/Cellcycle_MAGIC_impute.tsv"
 saver.path <- "results/SAVER/Cellcycle_SAVER_impute.tsv"
@@ -85,7 +85,7 @@ dca.path <- "results/DCA/Cellcycle_DCA_impute.tsv"
 ALRA.path <- "results/ALRA/Cellcycle_ALRA_impute.tsv"
 DeepImpute.path <- "results/DeepImpute/Cellcycle_DeepImpute_impute.tsv"
 DrImpute.path <- "results/DrImpute/Cellcycle_DrImpute_impute.tsv"
-scGNN.path <- "results/scGNN/Cellcycle_scGNN_impute.tsv"
+VIPER.path <- "results/VIPER/Cellcycle_VIPER_impute.tsv"
 scIGANs.path <- "results/scIGANs/Cellcycle_scIGANs_impute.tsv"
 scVI.path <- "results/scVI/Cellcycle_scVI_impute.tsv"
 
@@ -99,7 +99,7 @@ dca.ne_plot <- noErcc(dca.path, "DCA", all=F)
 ALRA.ne_plot <- noErcc(ALRA.path, "ALRA")
 DeepImpute.ne_plot <- noErcc(DeepImpute.path, "DeepImpute")
 DrImpute.ne_plot <- noErcc(DrImpute.path, "DrImpute")
-scGNN.ne_plot <- noErcc(scGNN.path, "scGNN", all=F)
+VIPER.ne_plot <- noErcc(VIPER.path, "VIPER")
 scIGANs.ne_plot <- noErcc(scIGANs.path, "scIGANs")
 scVI.ne_plot <- noErcc(scVI.path, "scVI")
 
@@ -113,27 +113,27 @@ dca.e_plot <- Ercc(dca.path, "DCA", all=F)
 ALRA.e_plot <- Ercc(ALRA.path, "ALRA")
 DeepImpute.e_plot <- Ercc(DeepImpute.path, "DeepImpute")
 DrImpute.e_plot <- Ercc(DrImpute.path, "DrImpute")
-scGNN.e_plot <- Ercc(scGNN.path, "scGNN", all=F)
+VIPER.e_plot <- Ercc(VIPER.path, "VIPER")
 scIGANs.e_plot <- Ercc(scIGANs.path, "scIGANs")
 scVI.e_plot <- Ercc(scVI.path, "scVI")
 
 noErcc.plot.s <- ggarrange(raw.ne_plot, SCDD.ne_plot, Diffusion.ne_plot, 
                        magic.ne_plot, saver.ne_plot, dca.ne_plot,
                        ALRA.ne_plot, DeepImpute.ne_plot, DrImpute.ne_plot,
-                       scGNN.ne_plot, scIGANs.ne_plot, scVI.ne_plot,
+                       VIPER.ne_plot, scIGANs.ne_plot, scVI.ne_plot,
              nrow=4, ncol=3, legend="bottom", common.legend=T)
 
 Ercc.plot.s <- ggarrange(raw.e_plot, SCDD.e_plot, Diffusion.e_plot,
                        magic.e_plot, saver.e_plot, dca.e_plot,
                        ALRA.e_plot, DeepImpute.e_plot, DrImpute.e_plot,
-                       scGNN.e_plot, scIGANs.e_plot, scVI.e_plot,
-             nrow=2, ncol=3, legend="bottom", common.legend=T)
+                       VIPER.e_plot, scIGANs.e_plot, scVI.e_plot,
+             nrow=4, ncol=3, legend="bottom", common.legend=T)
 
 # Figures
-pdf("paper/Cellcycle/Cellcycle_noErcc.pdf", 9, 12)
+pdf("paper/Cellcycle/Cellcycle_noErcc1.pdf", 9, 12)
 noErcc.plot.s
 dev.off()
 
-pdf("paper/Cellcycle/Cellcycle_Ercc.pdf", 9, 12)
+pdf("paper/Cellcycle/Cellcycle_Ercc1.pdf", 9, 12)
 Ercc.plot.s
 dev.off()

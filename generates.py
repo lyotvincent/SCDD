@@ -123,6 +123,8 @@ def Generate_fish(has_results=False):
         dataPath = "data/fish.raw.tsv"
         format = "tsv"
         RunComps(expName, dataPath, labelPath=None, format=format)
+        # SCDD:150mins
+        # scIGANs: 2.5days
         # scGNN: 192mins
         # deepimpute: 10min
 
@@ -186,7 +188,16 @@ def Generate_sc_dropseq(has_results=False):
     perfs.to_csv("paper/sc_dropseq/sc_dropseq_perfs1.tsv", sep='\t')
     print("Generate Li OK.")
 
+def Generate_Bladder(has_results=False):
+    if has_results == False:
+        expName = "sc_dropseq"
+        dataPath = "data/TS_Bladder.h5ad"
+        labelPath = ""
+        format = "h5ad"
+        RunComps(expName, dataPath, labelPath, format=format)
+    print("Generate Bladder OK.")
+
 # Generate_CIDR(has_results=False)
 # Generate_sc_10x(has_results=False)
-Generate_fish(has_results=False)
+Generate_Timecourse(has_results=True)
 # Generate_sc_dropseq(has_results=True)

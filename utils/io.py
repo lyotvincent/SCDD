@@ -1,4 +1,5 @@
 import numpy as np
+from numpy import random
 import pandas as pd
 import random
 from tqdm import tqdm
@@ -20,22 +21,24 @@ def LoadData(expName, dataPath, format="tsv", labelPath=None, needTrans=True, la
     :return: training data and training label
     """
     df = pd.DataFrame()
+    global cells
+    global genes
     if format == "tsv":
         df = pd.read_csv(dataPath, sep='\t', index_col=0)
         print("Experiment:{0}".format(expName))
         print("Data path:{0}".format(dataPath))
         print("Label path:{0}".format(labelPath))
+        cells = df.columns
+        genes = df.index
     elif format == "h5ad":
         adata = ad.read_h5ad(dataPath)
-        df = pd.DataFrame(adata.X,
+        df = pd.DataFrame(adata.X.todense(),
                       index=adata.obs_names,
                       columns=adata.var_names,
                       dtype='int')
+        cells = df.index
+        genes = df.columns
     # set global values to save cells and genes, which will be used in SaveData
-    global cells
-    global genes
-    cells = df.columns
-    genes = df.index
     if needTrans and format != 'h5ad':
         train_data = np.array(df).transpose()
     else:
@@ -172,6 +175,24 @@ def DataMask(dataPath, mask=0.1):
     mask_pt = pd.DataFrame(rand, index=df.index, columns=df.columns)
     mask_df.to_csv("data/mask{0}_".format(mask) + dataPath.split('/')[1], sep='\t', header=True)
     mask_pt.to_csv("data/maskpt{0}_".format(mask) + dataPath.split('/')[1], sep='\t', header=True)
+
+def DataMask2(dataPath, p=0.8):
+    df = pd.read_csv(dataPath, sep='\t', index_col=0)
+    df = df.T
+    gene_depth = np.sum(df, axis=0)
+    cell_depth = np.sum(df, axis=1)
+    gene_median = np.median(gene_depth)
+    cell_median = np.median(cell_depth)
+    gene = gene_depth > gene_median
+    cell = cell_depth > cell_median
+    df0 = df[cell]
+    df0 = df0.T
+    df1 = df0[gene]
+    A0 = df1.T
+    A1 = A0.apply(lambda x:random.binomial(n=x, p=p, size=144))
+    A0.to_csv("data/DS_Cellcycle.raw.txt", sep='\t', header=True)
+    A1.to_csv("data/DS0.8_Cellcycle.raw.txt", sep='\t', header=True)
+
 
 
 

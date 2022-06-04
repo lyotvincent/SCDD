@@ -114,6 +114,7 @@ sc_10x.cstcomp <- function(cst){
 raw.path <- paste0("data/sc_10x.raw.tsv")
 SCDD.path <- paste0("results/SCDD/sc_10x_SCDD1_impute.tsv")
 Diffusion.path <- paste0("results/Diffusion/sc_10x_Diffusion_impute.tsv")
+scIGANs.path <- paste0("results/scIGANs/sc_10x_scIGANs_impute.tsv")
 magic.path <- paste0("results/MAGIC/sc_10x_MAGIC_impute.tsv")
 saver.path <- paste0("results/SAVER/sc_10x_SAVER_impute.tsv")
 dca.path <- paste0("results/DCA/sc_10x_DCA_impute.tsv")
@@ -128,6 +129,7 @@ scVI.path <- paste0("results/scVI/sc_10x_scVI_impute.tsv")
 raw.st <- sc_10x.st(raw.path)
 SCDD.st <- sc_10x.st(SCDD.path)
 Diffusion.st <- sc_10x.st(Diffusion.path)
+scIGANs.st <- sc_10x.st(scIGANs.path)
 magic.st <- sc_10x.st(magic.path)
 saver.st <- sc_10x.st(saver.path)
 dca.st <- sc_10x.st(dca.path)
@@ -141,6 +143,7 @@ VIPER.st <- sc_10x.st(VIPER.path)
 raw.umap <- sc_10x.umap(raw.st, "Raw")
 SCDD.umap <- sc_10x.umap(SCDD.st, "SCDD")
 Diffusion.umap <- sc_10x.umap(Diffusion.st, "SCDD(Diffusion)")
+scIGANs.umap <- sc_10x.umap(scIGANs.st, "scIGANs")
 magic.umap <- sc_10x.umap(magic.st, "MAGIC")
 saver.umap <- sc_10x.umap(saver.st, "SAVER")
 dca.umap <- sc_10x.umap(dca.st, "DCA")
@@ -151,12 +154,17 @@ ALRA.umap <- sc_10x.umap(ALRA.st, "ALRA")
 scVI.umap <- sc_10x.umap(scVI.st, "scVI")
 VIPER.umap <- sc_10x.umap(VIPER.st, "VIPER")
 
-pdf("paper/sc_10x/sc_10x_umap1.pdf", 12, 12)
-ggarrange(raw.umap, SCDD.umap, Diffusion.umap, magic.umap,
-             saver.umap, dca.umap, DeepImpute.umap, DrImpute.umap,
-              scGNN.umap, ALRA.umap, scVI.umap, VIPER.umap,
-              ncol = 3, nrow = 4, common.legend=T, legend="bottom")
+pdf("paper/sc_10x/sc_10x_umap31.pdf", 9, 3.5)
+ggarrange(raw.umap, SCDD.umap, Diffusion.umap, 
+          ncol = 3, nrow = 1, common.legend=T, legend="none")
 dev.off()
+
+svg("paper/sc_10x/sc_10x_umap32.svg", 15, 7.5)
+ggarrange(saver.umap, DeepImpute.umap, DrImpute.umap, scIGANs.umap, VIPER.umap,
+          scGNN.umap, magic.umap, dca.umap, ALRA.umap, scVI.umap,
+          ncol = 5, nrow = 2, common.legend=T, legend="bottom")
+dev.off()
+
 
 # run Seurat's cluster and save the Idents
 raw.cst <- sc_10x.cst(raw.path)
