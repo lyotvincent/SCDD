@@ -72,7 +72,6 @@ class SCDD:
                                          format=self.format,
                                          needTrans=self.Tran)
         self.log_data = np.log(self.data + 1.01)
-        A = getA(self.data, method=self.method, filter=self.filter)
         print("Using neighbors:{0}.".format(self.neighbors))
         print("Using threshold:{0}.".format(self.threshold))
         if store:
@@ -82,6 +81,7 @@ class SCDD:
             dropout_rate, null_genes = get_dropout_rate(self.log_data)
             Omega, Target = get_supervise(self.log_data , dropout_rate, null_genes, M, self.neighbors, self.threshold)
             SaveTargets(M, Omega, Target, dropout_rate, null_genes)
+        A = getA(self.data, method=self.method, filter=self.filter)
         md = SC_Denoising(self.log_data, A, Omega, Target, batch_size=self.batch_size)
         md.train(2000)
         self.result = md.impute()

@@ -21,3 +21,16 @@ def getA(trainData, method="TFIDF", filter=True, M:np.array=None):
         A = D * np.mat(A) * D
     A = np.array(A)
     return A
+
+def getA_batch(C, index):
+    C = C[:, index]
+    batch_size = len(index)
+    A = []
+    for i in range(batch_size):
+        tp = C[:, i:i+1]
+        tp2 = (C == tp)
+        A.append(np.sum(tp2, axis=0))
+    D = np.diag(np.where(np.sum(A, axis=0) == 0, [1] * len(A), np.sum(A, axis=0)) ** -0.5)
+    A = D * np.mat(A) * D
+    A = np.array(A)
+    return A

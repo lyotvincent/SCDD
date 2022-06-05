@@ -49,6 +49,29 @@ def RobjKmeans(train_data: np.array) -> np.array:
     M = np.array(M)
     return M
 
+def RobjSC3_svm(train_data: np.array) -> np.array:
+    np.savetxt('temp/train_data.txt', train_data, fmt="%f," * len(train_data[0]))
+    print("Converted data to R-object and start R-engine...")
+    C = robjects.r('''
+        library(SC3)
+        library(data.table)
+        library(Matrix)
+        a <- fread('temp/train_data.txt', sep=',', header=F)
+        tp <- t(a)
+        tp <- tp[which(rowSums(tp)>0),]
+        tplog <- log2(tp+1)
+        rm(a)
+        library(SingleCellExperiment)
+        sce<-SingleCellExperiment(assays=list(counts=tp, logcounts=tplog))
+        ks<-sc3_estimate_k(sce)@metadata$sc3$k_estimation
+        rowData(sce)$feature_symbol=1:dim(tp)[1]
+        sce<-sc3(sce,ks=ks,biology=FALSE,svm_num_cells=50)
+        sce<-sc3_run_svm(sce,ks=ks)
+        return (colData(sce)[[paste0('sc3_', as.character(ks), '_clusters'), exact = FALSE]])
+        ''')
+    C = np.array(C)
+    return C
+
 def RobjSNN(train_data: np.array) -> np.array:
     np.savetxt('temp/train_data.txt', train_data, fmt="%f," * len(train_data[0]))
     print("Converted data to R-object and start R-engine...")
