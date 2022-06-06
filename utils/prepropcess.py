@@ -1,8 +1,11 @@
 import numpy as np
 import pandas as pd
+import scanpy as sc
+import anndata as ad
 from scipy.stats import gamma, norm
 from scipy.optimize import root
 from scipy.special import digamma
+from scipy.sparse import csr_matrix
 from tqdm import tqdm
 import rpy2.robjects as robjects
 import os
@@ -96,6 +99,15 @@ def RobjSNN(train_data: np.array) -> np.array:
     M = np.array(M)
     return M
 
+def AnnDataSNN(train_data: ad.AnnData):
+    adata = train_data.copy()
+    sc.pp.filter_genes(adata, min_counts=1)
+    sc.pp.normalize_per_cell(adata)
+    sc.pp.log1p(adata)
+    sc.pp.highly_variable_genes(adata)
+    sc.pp.pca(adata, n_comps=100, use_highly_variable=True, svd_solver='arpack')
+    sc.pp.neighbors(adata)
+    return adata.obsp['connectivities']
 
 # calculate the q()
 def calculate_weight(xdata, params):
@@ -222,23 +234,41 @@ def get_dropout_rate(count, point = np.log(1.01)):
     return dropout_rate.T, null_genes
 
 
+def generate_neighbor_sparse(data, M:csr_matrix, neighbornum, i):
+    # for large shape M, it should be sparse Matrix, we find the nonzero items and compare them
+    cellM = M[i]
+    idx = cellM.nonzero()[1]
+    val = cellM.data.flatten()
+    if len(idx) < neighbornum:
+        neibor_data = np.mean(data[idx, :], axis=0)
+    else:
+        df = pd.DataFrame({'val':val, 'idx':idx})
+        df = df.sort_values(by='val')
+        top_idx = df.iloc[:neighbornum, 1]
+        neibor_data = np.mean(data[top_idx, :], axis=0)
+    return neibor_data
+
+
 # Obtain the input items and supervision items for denoising
-def get_supervise(data,dropout,null_genes, M, neighbornum=10, threshold=0.2):
+def get_supervise(data,dropout,null_genes, M, neighbornum=10, threshold=0.2, sparse=False):
     nullarg = null_genes
     data = np.delete(data, nullarg, axis=1)
     data1 = data
     Omega = np.where(data > 0.5, 1, 0)  # 输入项
     dropout = np.delete(dropout, nullarg, axis=1)
     # In the M matrix, the larger the value, the more similar the description is
-    dist = np.array(M)
-    neibor = np.argsort(-dist, axis=1)
-    neibor_data = map(lambda i:np.mean(data[neibor[i, 1:neighbornum]], axis=0), range(len(neibor)))
-    neibor_data = list(neibor_data)
+    if sparse == False:
+        dist = np.array(M)
+        neibor = np.argsort(-dist, axis=1)
+        neibor_data = map(lambda i:np.mean(data[neibor[i, 1:neighbornum]], axis=0), range(len(neibor)))
+        neibor_data = list(neibor_data)
+    else:
+        neibor_data = map(lambda i:generate_neighbor_sparse(data, M, neighbornum, i), range(data.shape[0]))
+        neibor_data = list(neibor_data)
     for i in tqdm(range(data.shape[0])):
         for j in range(data.shape[1]):
-            if dropout[i][j] > threshold:
-                data[i][j] = dropout[i][j] * neibor_data[i][j] + (1 - dropout[i][j]) * data[i][j]
-                Omega[i][j] = 0.5
+            data[i][j] = dropout[i][j] * neibor_data[i][j] + (1 - dropout[i][j]) * data[i][j]
+            Omega[i][j] = 0.5
     return Omega, data1
 
 

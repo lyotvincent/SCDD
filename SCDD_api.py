@@ -1,14 +1,15 @@
 import numpy as np
+import scanpy as sc
 from utils.io import *
 from utils.kernel import *
 from models.scdd import *
-from utils.prepropcess import get_dropout_rate, get_supervise, makeup_results, makeup_results_all, RobjKmeans
+from utils.prepropcess import get_dropout_rate, get_supervise, makeup_results, makeup_results_all, RobjKmeans, RobjSC3_svm, AnnDataSNN
 modelName = "SCDD"
 
 class SCDD:
     def __init__(self, name=None, raw=None, label=None,
-                 Tran=True, id=None, dropout=True,
-                 method="TFIDF", filter=True, format="tsv", conservative=False,
+                 Tran=True, id=None, dropout=True, structure='AnnData',
+                 method="TFIDF", neighbor_method="SC3",filter=True, format="tsv", conservative=False,
                  neighbors=20, threshold=0.2, batch_size=1024):
         self.name = name
         self.raw = raw
@@ -18,9 +19,11 @@ class SCDD:
         self.data = None
         self.id = id
         self.dropout = dropout
+        self.structure = structure
         self.filter = filter
         self.format = format
         self.method = method
+        self.neighbor_method = neighbor_method
         self.conservative = conservative
         self.neighbors = neighbors
         self.threshold = threshold
@@ -70,17 +73,30 @@ class SCDD:
         self.data, self.Label = LoadData(self.name, self.raw,
                                          labelPath=self.label,
                                          format=self.format,
+                                         structure=self.structure,
                                          needTrans=self.Tran)
-        self.log_data = np.log(self.data + 1.01)
+        if self.structure == "AnnData":
+            self.log_data = self.data.X.toarray()
+            self.log_data = np.log(self.log_data + 1.01)
+        else:
+            self.log_data = np.log(self.data + 1.01)
         print("Using neighbors:{0}.".format(self.neighbors))
         print("Using threshold:{0}.".format(self.threshold))
         if store:
-            M, Omega, Target, dropout_rate, null_genes = LoadTargets()
+            if self.neighbor_method == "SNN":
+                M, Omega, Target, dropout_rate, null_genes = LoadTargets(True)
+            else:
+                M, Omega, Target, dropout_rate, null_genes = LoadTargets(False)
         else:
-            M = RobjKmeans(self.data)
+            if self.neighbor_method == "SC3":
+                M = RobjKmeans(self.data)
+                self.sparse = False
+            elif self.neighbor_method == "SNN":
+                M = AnnDataSNN(self.data)
+                self.sparse = True
             dropout_rate, null_genes = get_dropout_rate(self.log_data)
-            Omega, Target = get_supervise(self.log_data , dropout_rate, null_genes, M, self.neighbors, self.threshold)
-            SaveTargets(M, Omega, Target, dropout_rate, null_genes)
+            Omega, Target = get_supervise(self.log_data , dropout_rate, null_genes, M, self.neighbors, self.threshold, self.sparse)
+            SaveTargets(M, Omega, Target, dropout_rate, null_genes, sparse=self.sparse)
         A = getA(self.data, method=self.method, filter=self.filter)
         md = SC_Denoising(self.log_data, A, Omega, Target, batch_size=self.batch_size)
         md.train(2000)

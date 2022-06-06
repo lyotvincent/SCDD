@@ -2,7 +2,7 @@ import numpy as np
 from scipy.stats import spearmanr
 
 
-def getA(trainData, method="TFIDF", filter=True, M:np.array=None):
+def getA(trainData, method="TFIDF", filter=True, structure="Array"):
     data = trainData > 0
     print("using method:{0} to get A...".format(method))
     if method == "TFIDF":

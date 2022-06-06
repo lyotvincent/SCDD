@@ -4,46 +4,34 @@ import pandas as pd
 import random
 from tqdm import tqdm
 import anndata as ad
+from scipy.sparse import csr_matrix, save_npz, load_npz
 import os
 
 cells = np.array([])
 genes = np.array([])
 
 
-def LoadData(expName, dataPath, format="tsv", labelPath=None, needTrans=True, labelHeader=None):
+def LoadData(expName, dataPath, format="tsv",
+             labelPath=None, needTrans=True, labelHeader=None,
+             structure='Array', slot="raw"):
     """
     :rtype: tuple(np.array, np.array)
     :param expName: experiment name
     :param dataPath: the origin data path
     :param labelPath: the label path
     :param needTrans: if true, transpose the origin data.
-    :param labelHeader: need to read the first line or not
+    :param labelHeader: need to read the first line or not.
+    :param structure: data sturcture used in our method, Array or AnnData.
     :return: training data and training label
     """
-    df = pd.DataFrame()
     global cells
     global genes
-    if format == "tsv":
-        df = pd.read_csv(dataPath, sep='\t', index_col=0)
-        print("Experiment:{0}".format(expName))
-        print("Data path:{0}".format(dataPath))
-        print("Label path:{0}".format(labelPath))
-        cells = df.columns
-        genes = df.index
-    elif format == "h5ad":
-        adata = ad.read_h5ad(dataPath)
-        df = pd.DataFrame(adata.X.todense(),
-                      index=adata.obs_names,
-                      columns=adata.var_names,
-                      dtype='int')
-        cells = df.index
-        genes = df.columns
-    # set global values to save cells and genes, which will be used in SaveData
-    if needTrans and format != 'h5ad':
-        train_data = np.array(df).transpose()
-    else:
-        train_data = np.array(df)
-    print("Data size:{0}".format(train_data.shape))
+    print("Experiment:{0}".format(expName))
+    print("Data path:{0}".format(dataPath))
+    print("Label path:{0}".format(labelPath))
+    print("Using Structure:{0}".format(structure))
+
+    # Load labels
     label = list()
     if labelPath:
         train_label = np.array(pd.read_csv(labelPath, header=labelHeader))
@@ -58,8 +46,57 @@ def LoadData(expName, dataPath, format="tsv", labelPath=None, needTrans=True, la
                 tp[elem] = l
                 label.append(l)
                 l += 1
-    print("Load Data OK.")
-    return train_data, label
+
+    # Load data for 2 sturctures form tsv or h5ad
+    if structure == "AnnData":
+        train_data = ad.AnnData()
+        if format == "h5ad":
+            adata = ad.read_h5ad(dataPath)
+            cells = adata.obs_names
+            genes = adata.var_names
+            if slot == 'raw':
+                train_data = ad.AnnData(X=adata.raw.X,
+                              obs=pd.DataFrame(index=adata.obs_names),
+                              var=pd.DataFrame(index=adata.var_names))
+            else:
+                train_data = adata
+        elif format == "tsv":
+            df = pd.read_csv(dataPath, sep='\t', index_col=0)
+            if needTrans:
+                df = df.transpose()
+            adata = ad.AnnData(X=csr_matrix(np.array(df)),
+                               obs=pd.DataFrame(index=df.index),
+                               var=pd.DataFrame(index=df.columns))
+            cells = adata.obs_names
+            genes = adata.var_names
+            train_data = adata
+            print("Data size:{0}".format(adata.shape))
+        train_data.obs['total_counts'] = train_data.X.sum(axis=1).A1
+        train_data.var['total_counts'] = train_data.X.sum(axis=0).A1
+        print("Load Data to AnnData OK.")
+        return train_data, label
+    else:
+        df = pd.DataFrame()
+        if format == "tsv":
+            df = pd.read_csv(dataPath, sep='\t', index_col=0)
+            cells = df.columns
+            genes = df.index
+        elif format == "h5ad":
+            adata = ad.read_h5ad(dataPath)
+            df = pd.DataFrame(adata.raw.X.todense(),
+                          index=adata.obs_names,
+                          columns=adata.var_names,
+                          dtype='int')
+            cells = df.index
+            genes = df.columns
+        # set global values to save cells and genes, which will be used in SaveData
+        if needTrans and format != 'h5ad':
+            train_data = np.array(df).transpose()
+        else:
+            train_data = np.array(df)
+        print("Data size:{0}".format(train_data.shape))
+        print("Load Data to Array OK.")
+        return train_data, label
 
 
 def SaveData(expName, modelName, res, format="tsv", needTrans=True, id = None):
@@ -98,16 +135,23 @@ def SaveData(expName, modelName, res, format="tsv", needTrans=True, id = None):
         print("Write to {0} successfully!".format(path))
 
 
-def SaveTargets(M, Omega, Target, dropout_rate, null_genes):
-    np.savez("temp/clusters_M", M)
+def SaveTargets(M, Omega, Target, dropout_rate, null_genes, sparse=False):
+    if sparse == False:
+        np.savez("temp/clusters_M", M)
+    else:
+        save_npz("temp/clusters_M.npz", M)
     np.savez("temp/Omega", Omega)
     np.savez("temp/dropout_rate", dropout_rate)
     np.savez("temp/null_genes", null_genes)
     np.savez("temp/Target", Target)
 
-def LoadTargets():
-    M = np.load("temp/clusters_M.npz")
-    M = M['arr_0']
+def LoadTargets(sparse=False):
+    if sparse == False:
+        M = np.load("temp/clusters_M.npz")
+        M = M['arr_0']
+    else:
+        M = load_npz("temp/clusters_M.npz")
+        M = M['arr_0']
     print("Load related Matrix `M' from temp...")
     Omega = np.load("temp/Omega.npz")
     Omega = Omega['arr_0']
