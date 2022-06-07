@@ -253,7 +253,6 @@ def generate_neighbor_sparse(data, M:csr_matrix, neighbornum, i):
 def get_supervise(data,dropout,null_genes, M, neighbornum=10, threshold=0.2, sparse=False):
     nullarg = null_genes
     data = np.delete(data, nullarg, axis=1)
-    data1 = data
     Omega = np.where(data > 0.5, 1, 0)  # 输入项
     dropout = np.delete(dropout, nullarg, axis=1)
     # In the M matrix, the larger the value, the more similar the description is
@@ -265,11 +264,14 @@ def get_supervise(data,dropout,null_genes, M, neighbornum=10, threshold=0.2, spa
     else:
         neibor_data = map(lambda i:generate_neighbor_sparse(data, M, neighbornum, i), range(data.shape[0]))
         neibor_data = list(neibor_data)
-    for i in tqdm(range(data.shape[0])):
-        for j in range(data.shape[1]):
-            data[i][j] = dropout[i][j] * neibor_data[i][j] + (1 - dropout[i][j]) * data[i][j]
-            Omega[i][j] = 0.5
-    return Omega, data1
+    data = np.where(dropout > threshold, dropout * neibor_data + (1 - dropout) * data, data)
+    Omega = np.where(dropout > threshold, 0.5, Omega)
+    # for i in tqdm(range(data.shape[0])):
+    #     for j in range(data.shape[1]):
+    #         if dropout[i][j] > threshold:
+    #             data[i][j] = dropout[i][j] * neibor_data[i][j] + (1 - dropout[i][j]) * data[i][j]
+    #             Omega[i][j] = 0.5
+    return Omega, data
 
 
 # Complete the matrix after neural network training
@@ -290,11 +292,12 @@ def makeup_results(result, data, null_genes, dropout, conservative=False, thresh
 def makeup_results_all(result, data, null_genes, dropout, threshold=0.2):
     colarg = range(data.shape[1])
     nullarg = null_genes.flatten()
+    idx = np.array(range(len(nullarg)))
+    insert_loc = nullarg - idx
     validarg = list(set(colarg) - set(nullarg))
-    cdata = np.array(data, copy = True)
-    for i in range(result.shape[0]):
-        for j in range(result.shape[1]):
-            if dropout[i, validarg[j]] > threshold:
-                cdata[i, validarg[j]] = result[i][j]
-            data[i, validarg[j]] = result[i][j]
+    cdata = np.array(data[:, validarg], copy=True)
+    temp = data[:, nullarg]
+    cdata = np.where(dropout[:, validarg] > threshold, result, cdata)
+    cdata = np.insert(cdata, insert_loc, temp, 1)
+    data = np.insert(result, insert_loc, temp, 1)
     return data, cdata

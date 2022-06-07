@@ -5,6 +5,7 @@ import numpy as np
 from sklearn.decomposition import PCA
 from tqdm import tqdm
 import random
+from scipy.stats import spearmanr
 
 l = 0
 class SC_Denoising:
@@ -140,7 +141,13 @@ class SC_Denoising:
         target_batch = self.Target[batch]
         omega_batch = self.Omega[batch]
         A_batch = self.A[batch, :]
-        A_batch = A_batch[:, batch]
+        A_batch = spearmanr(A_batch.transpose())[0]
+        A_batch = np.where(np.diag([1] * len(batch)) == 1, np.diag([np.min(A_batch)] * len(batch)), A_batch)
+        A_batch = (A_batch - np.min(A_batch)) / (np.max(A_batch) - np.min(A_batch))
+        A_batch = np.where(np.diag([1] * len(batch)) == 1, np.diag([1] * len(batch)), A_batch)
+        D = np.diag(np.where(np.sum(A_batch, axis=0) == 0, [1] * len(A_batch), np.sum(A_batch, axis=0)) ** -0.5)
+        A_batch = D * np.mat(A_batch) * D
+        A_batch = np.array(A_batch)
         return cell_batch, A_batch, omega_batch, target_batch
 
     def train(self, n):

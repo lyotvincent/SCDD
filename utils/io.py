@@ -151,7 +151,6 @@ def LoadTargets(sparse=False):
         M = M['arr_0']
     else:
         M = load_npz("temp/clusters_M.npz")
-        M = M['arr_0']
     print("Load related Matrix `M' from temp...")
     Omega = np.load("temp/Omega.npz")
     Omega = Omega['arr_0']

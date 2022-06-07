@@ -97,7 +97,14 @@ class SCDD:
             dropout_rate, null_genes = get_dropout_rate(self.log_data)
             Omega, Target = get_supervise(self.log_data , dropout_rate, null_genes, M, self.neighbors, self.threshold, self.sparse)
             SaveTargets(M, Omega, Target, dropout_rate, null_genes, sparse=self.sparse)
-        A = getA(self.data, method=self.method, filter=self.filter)
+        # whether need to sperate A to batch
+        if self.batch_size >= M.shape[0]:
+            if self.structure == "AnnData":
+                A = getA(self.data.X.toarray(), method=self.method, filter=self.filter)
+            else:
+                A = getA(self.data, method=self.method, filter=self.filter)
+        else:
+            A = self.data.X.todense() > 0
         md = SC_Denoising(self.log_data, A, Omega, Target, batch_size=self.batch_size)
         md.train(2000)
         self.result = md.impute()
