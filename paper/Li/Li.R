@@ -49,28 +49,30 @@ Li.cst <- function(path, has.name=F){
 }
 
 Li.umap <- function(st, title, has.name=F){
-    umap.plot <- DimPlot(st, reduction = "umap", pt.size = 0.8)+
+    umap.plot <- DimPlot(st, reduction = "umap", pt.size = 0.5)+
       labs(x="UMAP 1",y="UMAP 2",title=title)+ 
       theme(title = element_text(size = 12),
         plot.title = element_text(hjust = 0.5, face="plain"),
         axis.line = element_blank(),
         axis.text = element_blank(),
-        axis.title = element_text(size = 12),
+        axis.title = element_blank(),
         axis.ticks = element_blank(),
+        plot.margin = unit(c(0,0,0,0), "lines"),
         panel.background = element_blank(),
         panel.border = element_rect(color = "black", fill = NA))
     return (umap.plot)
 }
 
 Li.cluster <- function(cst, title, has.name=F){
-    umap.plot <- DimPlot(cst, reduction = "umap", pt.size = 0.8)+
+    umap.plot <- DimPlot(cst, reduction = "umap", pt.size = 0.5)+
       labs(x="UMAP 1",y="UMAP 2",title=title)+ 
       theme(title = element_text(size = 12),
         plot.title = element_text(hjust = 0.5, face="plain"),
         axis.line = element_blank(),
         axis.text = element_blank(),
-        axis.title = element_text(size = 12),
+        axis.title = element_blank(),
         axis.ticks = element_blank(),
+        plot.margin = unit(c(0,0,0,0), "lines"),
         panel.background = element_blank(),
         panel.border = element_rect(color = "black", fill = NA))
     return (umap.plot)
@@ -144,7 +146,7 @@ scVI.st <- Li.st(scVI.path)
 VIPER.st <- Li.st(VIPER.path)
 
 raw.umap <- Li.umap(raw.st, "Raw")
-SCDD.umap <- Li.umap(SCDD.st, "SCDD")
+SCDD.umap <- Li.umap(SCDD.st, "SCDD(Denoising)")
 Diffusion.umap <- Li.umap(Diffusion.st, "SCDD(Diffusion)")
 scIGANs.umap <- Li.umap(scIGANs.st, "scIGANs")
 magic.umap <- Li.umap(magic.st, "MAGIC")
@@ -157,12 +159,12 @@ ALRA.umap <- Li.umap(ALRA.st, "ALRA")
 scVI.umap <- Li.umap(scVI.st, "scVI")
 VIPER.umap <- Li.umap(VIPER.st, "VIPER")
 
-pdf("paper/Li/Li_umap31.pdf", 9, 3.5)
+svg("paper/Li/Li_umap31.svg", 9, 3)
 ggarrange(raw.umap, SCDD.umap, Diffusion.umap, 
               ncol = 3, nrow = 1, common.legend=T, legend="none")
 dev.off()
 
-svg("paper/Li/Li_umap32.svg", 15, 7.5)
+svg("paper/Li/Li_umap32.svg", 15, 7)
 ggarrange(saver.umap, dca.umap, DrImpute.umap, ALRA.umap, VIPER.umap,
           scGNN.umap, magic.umap, DeepImpute.umap, scIGANs.umap, scVI.umap,
           ncol = 5, nrow = 2, common.legend=T, legend="bottom")
@@ -192,7 +194,7 @@ write.table(predicts, file='temp/Li_predicts1.tsv', sep='\t')
 
 # Visualization of clusters
 raw.cluster <- Li.cluster(raw.cst, "Raw")
-SCDD.cluster <- Li.cluster(SCDD.cst, "SCDD")
+SCDD.cluster <- Li.cluster(SCDD.cst, "SCDD(Denoising)")
 Diffusion.cluster <- Li.cluster(Diffusion.cst, "SCDD(Diffusion)")
 scIGANs.cluster <- Li.cluster(scIGANs.cst, "scIGANs")
 magic.cluster <- Li.cluster(magic.cst, "MAGIC")
@@ -205,39 +207,46 @@ ALRA.cluster <- Li.cluster(ALRA.cst, "ALRA")
 scVI.cluster <- Li.cluster(scVI.cst, "scVI")
 VIPER.cluster <- Li.cluster(VIPER.cst, "VIPER")
 
-pdf("paper/Li/Li_cluster31.pdf", 9, 3.5)
+svg("paper/Li/Li_cluster31.svg", 9, 3)
 ggarrange(raw.cluster, SCDD.cluster, Diffusion.cluster,  
              
           ncol = 3, nrow = 1, common.legend=T, legend="none")
 dev.off()
 
-pdf("paper/Li/Li_cluster32.pdf", 15, 7)
+svg("paper/Li/Li_cluster32.svg", 15, 6.5)
 ggarrange(saver.cluster, dca.cluster, DrImpute.cluster, ALRA.cluster, VIPER.cluster,
     scGNN.cluster, magic.cluster, DeepImpute.cluster, scIGANs.cluster, scVI.cluster,
           ncol = 5, nrow = 2, common.legend=T, legend="none")
 
 dev.off()
 
-# Competitions among methods
-raw.perf <- Li.cstcomp(raw.cst)
-SCDD.perf <- Li.cstcomp(SCDD.cst)
-Diffusion.perf <- Li.cstcomp(Diffusion.cst)
-scIGANs.perf <- Li.cstcomp(scIGANs.cst)
-magic.perf <- Li.cstcomp(magic.cst)
-saver.perf <- Li.cstcomp(saver.cst)
-dca.perf <- Li.cstcomp(dca.cst)
-DeepImpute.perf <- Li.cstcomp(DeepImpute.cst)
-DrImpute.perf <- Li.cstcomp(DrImpute.cst)
-scGNN.perf <- Li.cstcomp(scGNN.cst)
-ALRA.perf <- Li.cstcomp(ALRA.cst)
-scVI.perf <- Li.cstcomp(scVI.cst)
-VIPER.perf <- Li.cstcomp(VIPER.cst)
+# svg("paper/Li/Li_net.svg", 8, 3)
+# ggarrange(SCDD.umap, SCDD.cluster,
+#           ncol = 2, nrow = 1)
+# 
+# dev.off()
 
-perf <- data.frame(raw.perf)
-pf <- rbind(perf, SCDD.perf, SCDD.perf, scIGANs.perf,
-            magic.perf, saver.perf, dca.perf,
-            DeepImpute.perf, DrImpute.perf, scGNN.perf,
-            ALRA.perf, scVI.perf, VIPER.perf)
-rownames(pf) <- c('Raw', 'SCDD', 'Diffusion', 'scIGANs', 'MAGIC', 'SAVER',
-            'DCA', 'DeepImpute', 'DrImpute', 'scGNN', 'ALRA', 'scVI', 'VIPER')
-write.table(pf, "temp/Li_perfs1.tsv", sep='\t')
+
+# Competitions among methods
+# raw.perf <- Li.cstcomp(raw.cst)
+# SCDD.perf <- Li.cstcomp(SCDD.cst)
+# Diffusion.perf <- Li.cstcomp(Diffusion.cst)
+# scIGANs.perf <- Li.cstcomp(scIGANs.cst)
+# magic.perf <- Li.cstcomp(magic.cst)
+# saver.perf <- Li.cstcomp(saver.cst)
+# dca.perf <- Li.cstcomp(dca.cst)
+# DeepImpute.perf <- Li.cstcomp(DeepImpute.cst)
+# DrImpute.perf <- Li.cstcomp(DrImpute.cst)
+# scGNN.perf <- Li.cstcomp(scGNN.cst)
+# ALRA.perf <- Li.cstcomp(ALRA.cst)
+# scVI.perf <- Li.cstcomp(scVI.cst)
+# VIPER.perf <- Li.cstcomp(VIPER.cst)
+# 
+# perf <- data.frame(raw.perf)
+# pf <- rbind(perf, SCDD.perf, SCDD.perf, scIGANs.perf,
+#             magic.perf, saver.perf, dca.perf,
+#             DeepImpute.perf, DrImpute.perf, scGNN.perf,
+#             ALRA.perf, scVI.perf, VIPER.perf)
+# rownames(pf) <- c('Raw', 'SCDD', 'Diffusion', 'scIGANs', 'MAGIC', 'SAVER',
+#             'DCA', 'DeepImpute', 'DrImpute', 'scGNN', 'ALRA', 'scVI', 'VIPER')
+# write.table(pf, "temp/Li_perfs1.tsv", sep='\t')

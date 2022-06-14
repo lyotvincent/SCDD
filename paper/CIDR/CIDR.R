@@ -52,8 +52,9 @@ CIDR.umap <- function(st, title, has.name=F){
         plot.title = element_text(hjust = 0.5, face="plain"),
         axis.line = element_blank(),
         axis.text = element_blank(),
-        axis.title = element_text(size = 12),
+        axis.title = element_blank(),
         axis.ticks = element_blank(),
+        plot.margin = unit(c(0,0,0,0), "lines"),
         panel.background = element_blank(),
         panel.border = element_rect(color = "black", fill = NA))
     return (umap.plot)
@@ -66,8 +67,9 @@ CIDR.cluster <- function(cst, title, has.name=F){
         plot.title = element_text(hjust = 0.5, face="plain"),
         axis.line = element_blank(),
         axis.text = element_blank(),
-        axis.title = element_text(size = 12),
+        axis.title = element_blank(),
         axis.ticks = element_blank(),
+        plot.margin = unit(c(0,0,0,0), "lines"),
         panel.background = element_blank(),
         panel.border = element_rect(color = "black", fill = NA))
     return (umap.plot)
@@ -154,12 +156,12 @@ ALRA.umap <- CIDR.umap(ALRA.st, "ALRA")
 scVI.umap <- CIDR.umap(scVI.st, "scVI")
 VIPER.umap <- CIDR.umap(VIPER.st, "VIPER")
 
-pdf("paper/CIDR/CIDR_umap31.pdf", 9, 3.5)
+svg("paper/CIDR/CIDR_umap31.svg", 6.5, 2.4)
 ggarrange(raw.umap, SCDD.umap, Diffusion.umap, 
           ncol = 3, nrow = 1, common.legend=T, legend="none")
 dev.off()
 
-svg("paper/CIDR/CIDR_umap32.svg", 15, 7.5)
+svg("paper/CIDR/CIDR_umap32.svg", 10, 4.6)
 ggarrange(saver.umap, DeepImpute.umap, DrImpute.umap, scIGANs.umap, VIPER.umap,
           scGNN.umap, magic.umap, dca.umap, ALRA.umap, scVI.umap,
           ncol = 5, nrow = 2, common.legend=T, legend="bottom")
@@ -201,7 +203,7 @@ ALRA.cluster <- CIDR.cluster(ALRA.cst, "ALRA")
 scVI.cluster <- CIDR.cluster(scVI.cst, "scVI")
 VIPER.cluster <- CIDR.cluster(VIPER.cst, "VIPER")
 
-pdf("paper/CIDR/CIDR_cluster1.pdf", 12, 12)
+svg("paper/CIDR/CIDR_cluster1.svg", 12, 12)
 ggarrange(raw.cluster, SCDD.cluster, Diffusion.cluster, magic.cluster,
              saver.cluster, dca.cluster, DeepImpute.cluster, DrImpute.cluster,
               scGNN.cluster, ALRA.cluster, scVI.cluster,

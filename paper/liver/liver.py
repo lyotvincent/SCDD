@@ -40,7 +40,7 @@ def generate_figures(dataPath, label, mtName, layouts, axs, type="paga", gene=No
             print("generating {0}".format(mtName[i]))
             data = pd.DataFrame(data.T, dtype=int)
             obs = pd.DataFrame(index=data.index)
-            obs['label'] = label
+            obs[''] = label
             var_names = data.columns
             var = pd.DataFrame(index=var_names)
             adata = ad.AnnData(np.array(data), obs=obs, var=var)
@@ -50,7 +50,7 @@ def generate_figures(dataPath, label, mtName, layouts, axs, type="paga", gene=No
                 sc.pp.recipe_zheng17(adata)
                 sc.tl.pca(adata, svd_solver='arpack')
                 sc.pp.neighbors(adata, n_neighbors=4, n_pcs=20)
-                sc.tl.paga(adata, groups='label')
+                sc.tl.paga(adata, groups='')
                 sc.pl.paga(adata, threshold=0.07, cmap='gist_rainbow', show=False, fontsize=12, ax=axs[i],
                            title=mtName[i])
             elif type == "umap":
@@ -58,17 +58,17 @@ def generate_figures(dataPath, label, mtName, layouts, axs, type="paga", gene=No
                 sc.pp.recipe_zheng17(adata)
                 sc.tl.pca(adata, svd_solver='arpack')
                 sc.pp.neighbors(adata, n_neighbors=4, n_pcs=20)
-                sc.tl.paga(adata, groups='label')
+                sc.tl.paga(adata, groups='')
                 sc.pl.paga(adata, threshold=0.07, cmap='gist_rainbow', show=False, fontsize=12,
                            title=mtName[i])
                 sc.tl.draw_graph(adata, init_pos='paga')
-                sc.pl.draw_graph(adata, color='label', legend_loc='on data', ax=axs[i], show=False,
+                sc.pl.draw_graph(adata, color='', legend_loc='on data', ax=axs[i], show=False,
                                  title=mtName[i])
             elif type == "violin":
                 sc.pp.normalize_per_cell(adata)  # the same as rescipe_zheng17
                 sc.pp.log1p(adata)
                 sc.pp.scale(adata)
-                sc.pl.violin(adata, groupby='label', keys=[gene], ax=axs[i], show=False, stripplot=False,
+                sc.pl.violin(adata, groupby='', keys=[gene], ax=axs[i], show=False, stripplot=False,
                              ylabel=gene)
                 axs[i].title.set_text(mtName[i])
     else:
@@ -81,7 +81,7 @@ def generate_figures(dataPath, label, mtName, layouts, axs, type="paga", gene=No
                     data = pd.read_csv(dataPath[cols*i+j], sep = '\t', index_col = 0)
                 data = pd.DataFrame(data.T, dtype = int)
                 obs = pd.DataFrame(index=data.index)
-                obs['label'] = label
+                obs[''] = label
                 var_names = data.columns
                 var = pd.DataFrame(index=var_names)
                 adata = ad.AnnData(np.array(data), obs=obs, var=var)
@@ -91,39 +91,39 @@ def generate_figures(dataPath, label, mtName, layouts, axs, type="paga", gene=No
                     sc.pp.recipe_zheng17(adata)
                     sc.tl.pca(adata, svd_solver='arpack')
                     sc.pp.neighbors(adata, n_neighbors=4, n_pcs=20)
-                    sc.tl.paga(adata, groups='label')
+                    sc.tl.paga(adata, groups='')
                     sc.pl.paga(adata, threshold=0.07, cmap='gist_rainbow',show=False, fontsize=12, ax=axs[i, j], title=mtName[cols*i+j])
                 elif type == "umap":
                     sc.pp.filter_genes(adata, min_counts=1)
                     sc.pp.recipe_zheng17(adata)
                     sc.tl.pca(adata, svd_solver='arpack')
                     sc.pp.neighbors(adata, n_neighbors=4, n_pcs=20)
-                    sc.tl.paga(adata, groups='label')
+                    sc.tl.paga(adata, groups='')
                     sc.pl.paga(adata, threshold=0.07, cmap='gist_rainbow', show=False, fontsize=12,
                                title=mtName[cols * i + j])
                     sc.tl.draw_graph(adata, init_pos='paga')
-                    sc.pl.draw_graph(adata, color='label', legend_loc='on data', ax=axs[i, j], show=False,
+                    sc.pl.draw_graph(adata, color='', legend_loc='on data', ax=axs[i, j], show=False,
                                      title=mtName[cols * i + j])
                 elif type == "violin":
                     sc.pp.normalize_per_cell(adata) # the same as rescipe_zheng17
                     sc.pp.log1p(adata)
                     sc.pp.scale(adata)
-                    sc.pl.violin(adata, groupby='label', keys=[gene], ax=axs[i, j], show=False, stripplot=False, ylabel=gene)
+                    sc.pl.violin(adata, groupby='', keys=[gene], ax=axs[i, j], show=False, stripplot=False, ylabel=gene)
                     axs[i, j].title.set_text(mtName[cols*i+j])
 
 # # plot for paga
-# fige, axse = plt.subplots(1, 3, figsize=(9,3),constrained_layout=True)
-# generate_figures(s_dataPath[:3], label, s_mtName[:3], (1, 3), axse, type="paga")
-# fige.savefig("paper/liver/liver_paga31.pdf")
-#
-# fige, axse = plt.subplots(2, 5, figsize=(15,6),constrained_layout=True)
-# generate_figures(s_dataPath[3:], label, s_mtName[3:], (2, 5), axse, type="paga")
-# fige.savefig("paper/liver/liver_paga32.pdf")
+fige, axse = plt.subplots(1, 3, figsize=(9,3),constrained_layout=True)
+generate_figures(s_dataPath[:3], label, s_mtName[:3], (1, 3), axse, type="paga")
+fige.savefig("paper/liver/liver_paga31.svg")
+
+fige, axse = plt.subplots(2, 5, figsize=(15,6),constrained_layout=True)
+generate_figures(s_dataPath[3:], label, s_mtName[3:], (2, 5), axse, type="paga")
+fige.savefig("paper/liver/liver_paga32.svg")
 
 fige, axse = plt.subplots(1, 3, figsize=(9,3),constrained_layout=True)
 generate_figures(s_dataPath[:3], label, s_mtName[:3], (1, 3), axse, type="umap")
-fige.savefig("paper/liver/liver_umap31.pdf")
+fige.savefig("paper/liver/liver_umap31.svg")
 
 fige, axse = plt.subplots(2, 5, figsize=(15,6),constrained_layout=True)
 generate_figures(s_dataPath[3:], label, s_mtName[3:], (2, 5), axse, type="umap")
-fige.savefig("paper/liver/liver_umap32.pdf")
+fige.savefig("paper/liver/liver_umap32.svg")

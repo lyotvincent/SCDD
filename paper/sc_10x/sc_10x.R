@@ -52,8 +52,9 @@ sc_10x.umap <- function(st, title, has.name=F){
         plot.title = element_text(hjust = 0.5, face="plain"),
         axis.line = element_blank(),
         axis.text = element_blank(),
-        axis.title = element_text(size = 12),
+        axis.title = element_blank(),
         axis.ticks = element_blank(),
+        plot.margin = unit(c(0,0,0,0), "lines"),
         panel.background = element_blank(),
         panel.border = element_rect(color = "black", fill = NA))
     return (umap.plot)
@@ -66,8 +67,9 @@ sc_10x.cluster <- function(cst, title, has.name=F){
         plot.title = element_text(hjust = 0.5, face="plain"),
         axis.line = element_blank(),
         axis.text = element_blank(),
-        axis.title = element_text(size = 12),
+        axis.title = element_blank(),
         axis.ticks = element_blank(),
+        plot.margin = unit(c(0,0,0,0), "lines"),
         panel.background = element_blank(),
         panel.border = element_rect(color = "black", fill = NA))
     return (umap.plot)
@@ -154,12 +156,12 @@ ALRA.umap <- sc_10x.umap(ALRA.st, "ALRA")
 scVI.umap <- sc_10x.umap(scVI.st, "scVI")
 VIPER.umap <- sc_10x.umap(VIPER.st, "VIPER")
 
-pdf("paper/sc_10x/sc_10x_umap31.pdf", 9, 3.5)
+svg("paper/sc_10x/sc_10x_umap31.svg", 6.5, 2.4)
 ggarrange(raw.umap, SCDD.umap, Diffusion.umap, 
           ncol = 3, nrow = 1, common.legend=T, legend="none")
 dev.off()
 
-svg("paper/sc_10x/sc_10x_umap32.svg", 15, 7.5)
+svg("paper/sc_10x/sc_10x_umap32.svg", 10, 4.6)
 ggarrange(saver.umap, DeepImpute.umap, DrImpute.umap, scIGANs.umap, VIPER.umap,
           scGNN.umap, magic.umap, dca.umap, ALRA.umap, scVI.umap,
           ncol = 5, nrow = 2, common.legend=T, legend="bottom")
@@ -167,66 +169,66 @@ dev.off()
 
 
 # run Seurat's cluster and save the Idents
-raw.cst <- sc_10x.cst(raw.path)
-SCDD.cst <- sc_10x.cst(SCDD.path)
-Diffusion.cst <- sc_10x.cst(Diffusion.path)
-magic.cst <- sc_10x.cst(magic.path)
-saver.cst <- sc_10x.cst(saver.path)
-dca.cst <- sc_10x.cst(dca.path)
-DeepImpute.cst <- sc_10x.cst(DeepImpute.path)
-DrImpute.cst <- sc_10x.cst(DrImpute.path)
-scGNN.cst <- sc_10x.cst(scGNN.path)
-ALRA.cst <- sc_10x.cst(ALRA.path)
-scVI.cst <- sc_10x.cst(scVI.path)
-VIPER.cst <- sc_10x.cst(VIPER.path)
-
-predicts <- data.frame(as.numeric(as.factor(label[,1])),
-                 Idents(raw.cst), Idents(SCDD.cst), Idents(Diffusion.cst),
-                 Idents(magic.cst), Idents(saver.cst), Idents(dca.cst),
-                 Idents(DeepImpute.cst), Idents(DrImpute.cst), Idents(scGNN.cst),
-                 Idents(ALRA.cst), Idents(scVI.cst), Idents(VIPER.cst))
-write.table(predicts, file='temp/sc_10x_predicts1.tsv', sep='\t')
-
-# Visualization of clusters
-raw.cluster <- sc_10x.cluster(raw.cst, "Raw")
-SCDD.cluster <- sc_10x.cluster(SCDD.cst, "SCDD")
-Diffusion.cluster <- sc_10x.cluster(Diffusion.cst, "SCDD(Diffusion)")
-magic.cluster <- sc_10x.cluster(magic.cst, "MAGIC")
-saver.cluster <- sc_10x.cluster(saver.cst, "SAVER")
-dca.cluster <- sc_10x.cluster(dca.cst, "DCA")
-DeepImpute.cluster <- sc_10x.cluster(DeepImpute.cst, "DeepImpute")
-DrImpute.cluster <- sc_10x.cluster(DrImpute.cst, "DrImpute")
-scGNN.cluster <- sc_10x.cluster(scGNN.cst, "scGNN")
-ALRA.cluster <- sc_10x.cluster(ALRA.cst, "ALRA")
-scVI.cluster <- sc_10x.cluster(scVI.cst, "scVI")
-VIPER.cluster <- sc_10x.cluster(VIPER.cst, "VIPER")
-
-pdf("paper/sc_10x/sc_10x_cluster1.pdf", 12, 12)
-ggarrange(raw.cluster, SCDD.cluster, Diffusion.cluster, magic.cluster,
-             saver.cluster, dca.cluster, DeepImpute.cluster, DrImpute.cluster,
-              scGNN.cluster, ALRA.cluster, scVI.cluster,
-              VIPER.cluster, ncol = 3, nrow = 4, common.legend=T, legend="none")
-dev.off()
-
-# Competitions among methods
-raw.perf <- sc_10x.cstcomp(raw.cst)
-SCDD.perf <- sc_10x.cstcomp(SCDD.cst)
-Diffusion.perf <- sc_10x.cstcomp(Diffusion.cst)
-magic.perf <- sc_10x.cstcomp(magic.cst)
-saver.perf <- sc_10x.cstcomp(saver.cst)
-dca.perf <- sc_10x.cstcomp(dca.cst)
-DeepImpute.perf <- sc_10x.cstcomp(DeepImpute.cst)
-DrImpute.perf <- sc_10x.cstcomp(DrImpute.cst)
-scGNN.perf <- sc_10x.cstcomp(scGNN.cst)
-ALRA.perf <- sc_10x.cstcomp(ALRA.cst)
-scVI.perf <- sc_10x.cstcomp(scVI.cst)
-VIPER.perf <- sc_10x.cstcomp(VIPER.cst)
-
-perf <- data.frame(raw.perf)
-pf <- rbind(perf, SCDD.perf, Diffusion.perf,
-            magic.perf, saver.perf, dca.perf,
-            DeepImpute.perf, DrImpute.perf, scGNN.perf,
-            ALRA.perf, scVI.perf, VIPER.perf)
-rownames(pf) <- c('Raw', 'SCDD', 'SCDD(Diffusion)', 'MAGIC', 'SAVER',
-            'DCA', 'DeepImpute', 'DrImpute', 'scGNN', 'ALRA', 'scVI', 'VIPER')
-write.table(pf, "temp/sc_10x_perfs1.tsv", sep='\t')
+# raw.cst <- sc_10x.cst(raw.path)
+# SCDD.cst <- sc_10x.cst(SCDD.path)
+# Diffusion.cst <- sc_10x.cst(Diffusion.path)
+# magic.cst <- sc_10x.cst(magic.path)
+# saver.cst <- sc_10x.cst(saver.path)
+# dca.cst <- sc_10x.cst(dca.path)
+# DeepImpute.cst <- sc_10x.cst(DeepImpute.path)
+# DrImpute.cst <- sc_10x.cst(DrImpute.path)
+# scGNN.cst <- sc_10x.cst(scGNN.path)
+# ALRA.cst <- sc_10x.cst(ALRA.path)
+# scVI.cst <- sc_10x.cst(scVI.path)
+# VIPER.cst <- sc_10x.cst(VIPER.path)
+# 
+# predicts <- data.frame(as.numeric(as.factor(label[,1])),
+#                  Idents(raw.cst), Idents(SCDD.cst), Idents(Diffusion.cst),
+#                  Idents(magic.cst), Idents(saver.cst), Idents(dca.cst),
+#                  Idents(DeepImpute.cst), Idents(DrImpute.cst), Idents(scGNN.cst),
+#                  Idents(ALRA.cst), Idents(scVI.cst), Idents(VIPER.cst))
+# write.table(predicts, file='temp/sc_10x_predicts1.tsv', sep='\t')
+# 
+# # Visualization of clusters
+# raw.cluster <- sc_10x.cluster(raw.cst, "Raw")
+# SCDD.cluster <- sc_10x.cluster(SCDD.cst, "SCDD")
+# Diffusion.cluster <- sc_10x.cluster(Diffusion.cst, "SCDD(Diffusion)")
+# magic.cluster <- sc_10x.cluster(magic.cst, "MAGIC")
+# saver.cluster <- sc_10x.cluster(saver.cst, "SAVER")
+# dca.cluster <- sc_10x.cluster(dca.cst, "DCA")
+# DeepImpute.cluster <- sc_10x.cluster(DeepImpute.cst, "DeepImpute")
+# DrImpute.cluster <- sc_10x.cluster(DrImpute.cst, "DrImpute")
+# scGNN.cluster <- sc_10x.cluster(scGNN.cst, "scGNN")
+# ALRA.cluster <- sc_10x.cluster(ALRA.cst, "ALRA")
+# scVI.cluster <- sc_10x.cluster(scVI.cst, "scVI")
+# VIPER.cluster <- sc_10x.cluster(VIPER.cst, "VIPER")
+# 
+# svg("paper/sc_10x/sc_10x_cluster1.svg", 12, 12)
+# ggarrange(raw.cluster, SCDD.cluster, Diffusion.cluster, magic.cluster,
+#              saver.cluster, dca.cluster, DeepImpute.cluster, DrImpute.cluster,
+#               scGNN.cluster, ALRA.cluster, scVI.cluster,
+#               VIPER.cluster, ncol = 3, nrow = 4, common.legend=T, legend="none")
+# dev.off()
+# 
+# # Competitions among methods
+# raw.perf <- sc_10x.cstcomp(raw.cst)
+# SCDD.perf <- sc_10x.cstcomp(SCDD.cst)
+# Diffusion.perf <- sc_10x.cstcomp(Diffusion.cst)
+# magic.perf <- sc_10x.cstcomp(magic.cst)
+# saver.perf <- sc_10x.cstcomp(saver.cst)
+# dca.perf <- sc_10x.cstcomp(dca.cst)
+# DeepImpute.perf <- sc_10x.cstcomp(DeepImpute.cst)
+# DrImpute.perf <- sc_10x.cstcomp(DrImpute.cst)
+# scGNN.perf <- sc_10x.cstcomp(scGNN.cst)
+# ALRA.perf <- sc_10x.cstcomp(ALRA.cst)
+# scVI.perf <- sc_10x.cstcomp(scVI.cst)
+# VIPER.perf <- sc_10x.cstcomp(VIPER.cst)
+# 
+# perf <- data.frame(raw.perf)
+# pf <- rbind(perf, SCDD.perf, Diffusion.perf,
+#             magic.perf, saver.perf, dca.perf,
+#             DeepImpute.perf, DrImpute.perf, scGNN.perf,
+#             ALRA.perf, scVI.perf, VIPER.perf)
+# rownames(pf) <- c('Raw', 'SCDD', 'SCDD(Diffusion)', 'MAGIC', 'SAVER',
+#             'DCA', 'DeepImpute', 'DrImpute', 'scGNN', 'ALRA', 'scVI', 'VIPER')
+# write.table(pf, "temp/sc_10x_perfs1.tsv", sep='\t')

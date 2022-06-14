@@ -50,8 +50,9 @@ cc.plot <- function(st_data, st_label, title, Ercc=F){
             legend.position="bottom",
             axis.line = element_blank(),
             axis.text = element_blank(),
-            axis.title = element_text(size = 12),
+            axis.title = element_blank(),
             axis.ticks = element_blank(),
+            plot.margin = unit(c(0,0,0,0), "lines"),
             panel.background = element_blank(),
             panel.border = element_rect(color = "black", fill = NA))
     return (cluster.plot)
@@ -77,7 +78,7 @@ st_genes <- read.table("data/ID.map.txt", sep = '\t',  header = FALSE)
 st_genes <- st_genes[, 1:2]
 
 raw.path <- "data/Cellcycle.raw.txt"
-SCDD.path <- "results/SCDD/Cellcycle_SCDD_SNN_batch_impute.tsv"
+SCDD.path <- "results/SCDD/Cellcycle_SCDD1_impute.tsv"
 Diffusion.path <- "results/Diffusion/Cellcycle_Diffusion_impute.tsv"
 magic.path <- "results/MAGIC/Cellcycle_MAGIC_impute.tsv"
 saver.path <- "results/SAVER/Cellcycle_SAVER_impute.tsv"
@@ -121,19 +122,19 @@ noErcc.plot.s <- ggarrange(raw.ne_plot, SCDD.ne_plot, Diffusion.ne_plot,
                        magic.ne_plot, saver.ne_plot, dca.ne_plot,
                        ALRA.ne_plot, DeepImpute.ne_plot, DrImpute.ne_plot,
                        VIPER.ne_plot, scIGANs.ne_plot, scVI.ne_plot,
-             nrow=4, ncol=3, legend="bottom", common.legend=T)
+             nrow=2, ncol=6, legend="bottom", common.legend=T)
 
 Ercc.plot.s <- ggarrange(raw.e_plot, SCDD.e_plot, Diffusion.e_plot,
                        magic.e_plot, saver.e_plot, dca.e_plot,
                        ALRA.e_plot, DeepImpute.e_plot, DrImpute.e_plot,
                        VIPER.e_plot, scIGANs.e_plot, scVI.e_plot,
-             nrow=4, ncol=3, legend="bottom", common.legend=T)
+             nrow=2, ncol=6, legend="bottom", common.legend=T)
 
 # Figures
-pdf("paper/Cellcycle/Cellcycle_noErcc1.pdf", 9, 12)
+svg("paper/Cellcycle/Cellcycle_noErcc1.svg", 11, 4)
 noErcc.plot.s
 dev.off()
 
-pdf("paper/Cellcycle/Cellcycle_Ercc1.pdf", 9, 12)
+svg("paper/Cellcycle/Cellcycle_Ercc1.svg", 11, 4)
 Ercc.plot.s
 dev.off()

@@ -52,8 +52,9 @@ sc_dropseq.umap <- function(st, title, has.name=F){
         plot.title = element_text(hjust = 0.5, face="plain"),
         axis.line = element_blank(),
         axis.text = element_blank(),
-        axis.title = element_text(size = 12),
+        axis.title = element_blank(),
         axis.ticks = element_blank(),
+        plot.margin = unit(c(0,0,0,0), "lines"),
         panel.background = element_blank(),
         panel.border = element_rect(color = "black", fill = NA))
     return (umap.plot)
@@ -66,8 +67,9 @@ sc_dropseq.cluster <- function(cst, title, has.name=F){
         plot.title = element_text(hjust = 0.5, face="plain"),
         axis.line = element_blank(),
         axis.text = element_blank(),
-        axis.title = element_text(size = 12),
+        axis.title = element_blank(),
         axis.ticks = element_blank(),
+        plot.margin = unit(c(0,0,0,0), "lines"),
         panel.background = element_blank(),
         panel.border = element_rect(color = "black", fill = NA))
     return (umap.plot)
@@ -154,79 +156,79 @@ ALRA.umap <- sc_dropseq.umap(ALRA.st, "ALRA")
 scVI.umap <- sc_dropseq.umap(scVI.st, "scVI")
 VIPER.umap <- sc_dropseq.umap(VIPER.st, "VIPER")
 
-pdf("paper/sc_dropseq/sc_dropseq_umap31.pdf", 9, 3.5)
+svg("paper/sc_dropseq/sc_dropseq_umap31.svg", 6.5, 2.4)
 ggarrange(raw.umap, SCDD.umap, Diffusion.umap, 
           ncol = 3, nrow = 1, common.legend=T, legend="none")
 dev.off()
 
-svg("paper/sc_dropseq/sc_dropseq_umap32.svg", 15, 7.5)
+svg("paper/sc_dropseq/sc_dropseq_umap32.svg", 10, 4.6)
 ggarrange(saver.umap, DeepImpute.umap, DrImpute.umap, scIGANs.umap, VIPER.umap,
           scGNN.umap, magic.umap, dca.umap, ALRA.umap, scVI.umap,
           ncol = 5, nrow = 2, common.legend=T, legend="bottom")
 dev.off()
 
-
-# run Seurat's cluster and save the Idents
-raw.cst <- sc_dropseq.cst(raw.path)
-SCDD.cst <- sc_dropseq.cst(SCDD.path)
-Diffusion.cst <- sc_dropseq.cst(Diffusion.path)
-magic.cst <- sc_dropseq.cst(magic.path)
-saver.cst <- sc_dropseq.cst(saver.path)
-dca.cst <- sc_dropseq.cst(dca.path)
-DeepImpute.cst <- sc_dropseq.cst(DeepImpute.path)
-DrImpute.cst <- sc_dropseq.cst(DrImpute.path)
-scGNN.cst <- sc_dropseq.cst(scGNN.path)
-ALRA.cst <- sc_dropseq.cst(ALRA.path)
-scVI.cst <- sc_dropseq.cst(scVI.path)
-VIPER.cst <- sc_dropseq.cst(VIPER.path)
-
-predicts <- data.frame(as.numeric(as.factor(label[,1])),
-                 Idents(raw.cst), Idents(SCDD.cst), Idents(Diffusion.cst),
-                 Idents(magic.cst), Idents(saver.cst), Idents(dca.cst),
-                 Idents(DeepImpute.cst), Idents(DrImpute.cst), Idents(scGNN.cst),
-                 Idents(ALRA.cst), Idents(scVI.cst), Idents(VIPER.cst))
-write.table(predicts, file='temp/sc_dropseq_predicts1.tsv', sep='\t')
-
-# Visualization of clusters
-raw.cluster <- sc_dropseq.cluster(raw.cst, "Raw")
-SCDD.cluster <- sc_dropseq.cluster(SCDD.cst, "SCDD")
-Diffusion.cluster <- sc_dropseq.cluster(Diffusion.cst, "SCDD(Diffusion)")
-magic.cluster <- sc_dropseq.cluster(magic.cst, "MAGIC")
-saver.cluster <- sc_dropseq.cluster(saver.cst, "SAVER")
-dca.cluster <- sc_dropseq.cluster(dca.cst, "DCA")
-DeepImpute.cluster <- sc_dropseq.cluster(DeepImpute.cst, "DeepImpute")
-DrImpute.cluster <- sc_dropseq.cluster(DrImpute.cst, "DrImpute")
-scGNN.cluster <- sc_dropseq.cluster(scGNN.cst, "scGNN")
-ALRA.cluster <- sc_dropseq.cluster(ALRA.cst, "ALRA")
-scVI.cluster <- sc_dropseq.cluster(scVI.cst, "scVI")
-VIPER.cluster <- sc_dropseq.cluster(VIPER.cst, "VIPER")
-
-pdf("paper/sc_dropseq/sc_dropseq_cluster1.pdf", 12, 12)
-ggarrange(raw.cluster, SCDD.cluster, Diffusion.cluster, magic.cluster,
-             saver.cluster, dca.cluster, DeepImpute.cluster, DrImpute.cluster,
-              scGNN.cluster, ALRA.cluster, scVI.cluster,
-              VIPER.cluster, ncol = 3, nrow = 4, common.legend=T, legend="none")
-dev.off()
-
-# Competitions among methods
-raw.perf <- sc_dropseq.cstcomp(raw.cst)
-SCDD.perf <- sc_dropseq.cstcomp(SCDD.cst)
-Diffusion.perf <- sc_dropseq.cstcomp(Diffusion.cst)
-magic.perf <- sc_dropseq.cstcomp(magic.cst)
-saver.perf <- sc_dropseq.cstcomp(saver.cst)
-dca.perf <- sc_dropseq.cstcomp(dca.cst)
-DeepImpute.perf <- sc_dropseq.cstcomp(DeepImpute.cst)
-DrImpute.perf <- sc_dropseq.cstcomp(DrImpute.cst)
-scGNN.perf <- sc_dropseq.cstcomp(scGNN.cst)
-ALRA.perf <- sc_dropseq.cstcomp(ALRA.cst)
-scVI.perf <- sc_dropseq.cstcomp(scVI.cst)
-VIPER.perf <- sc_dropseq.cstcomp(VIPER.cst)
-
-perf <- data.frame(raw.perf)
-pf <- rbind(perf, SCDD.perf, Diffusion.perf,
-            magic.perf, saver.perf, dca.perf,
-            DeepImpute.perf, DrImpute.perf, scGNN.perf,
-            ALRA.perf, scVI.perf, VIPER.perf)
-rownames(pf) <- c('Raw', 'SCDD', 'SCDD(Diffusion)', 'MAGIC', 'SAVER',
-            'DCA', 'DeepImpute', 'DrImpute', 'scGNN', 'ALRA', 'scVI', 'VIPER')
-write.table(pf, "temp/sc_dropseq_perfs1.tsv", sep='\t')
+# 
+# # run Seurat's cluster and save the Idents
+# raw.cst <- sc_dropseq.cst(raw.path)
+# SCDD.cst <- sc_dropseq.cst(SCDD.path)
+# Diffusion.cst <- sc_dropseq.cst(Diffusion.path)
+# magic.cst <- sc_dropseq.cst(magic.path)
+# saver.cst <- sc_dropseq.cst(saver.path)
+# dca.cst <- sc_dropseq.cst(dca.path)
+# DeepImpute.cst <- sc_dropseq.cst(DeepImpute.path)
+# DrImpute.cst <- sc_dropseq.cst(DrImpute.path)
+# scGNN.cst <- sc_dropseq.cst(scGNN.path)
+# ALRA.cst <- sc_dropseq.cst(ALRA.path)
+# scVI.cst <- sc_dropseq.cst(scVI.path)
+# VIPER.cst <- sc_dropseq.cst(VIPER.path)
+# 
+# predicts <- data.frame(as.numeric(as.factor(label[,1])),
+#                  Idents(raw.cst), Idents(SCDD.cst), Idents(Diffusion.cst),
+#                  Idents(magic.cst), Idents(saver.cst), Idents(dca.cst),
+#                  Idents(DeepImpute.cst), Idents(DrImpute.cst), Idents(scGNN.cst),
+#                  Idents(ALRA.cst), Idents(scVI.cst), Idents(VIPER.cst))
+# write.table(predicts, file='temp/sc_dropseq_predicts1.tsv', sep='\t')
+# 
+# # Visualization of clusters
+# raw.cluster <- sc_dropseq.cluster(raw.cst, "Raw")
+# SCDD.cluster <- sc_dropseq.cluster(SCDD.cst, "SCDD")
+# Diffusion.cluster <- sc_dropseq.cluster(Diffusion.cst, "SCDD(Diffusion)")
+# magic.cluster <- sc_dropseq.cluster(magic.cst, "MAGIC")
+# saver.cluster <- sc_dropseq.cluster(saver.cst, "SAVER")
+# dca.cluster <- sc_dropseq.cluster(dca.cst, "DCA")
+# DeepImpute.cluster <- sc_dropseq.cluster(DeepImpute.cst, "DeepImpute")
+# DrImpute.cluster <- sc_dropseq.cluster(DrImpute.cst, "DrImpute")
+# scGNN.cluster <- sc_dropseq.cluster(scGNN.cst, "scGNN")
+# ALRA.cluster <- sc_dropseq.cluster(ALRA.cst, "ALRA")
+# scVI.cluster <- sc_dropseq.cluster(scVI.cst, "scVI")
+# VIPER.cluster <- sc_dropseq.cluster(VIPER.cst, "VIPER")
+# 
+# svg("paper/sc_dropseq/sc_dropseq_cluster1.svg", 12, 12)
+# ggarrange(raw.cluster, SCDD.cluster, Diffusion.cluster, magic.cluster,
+#              saver.cluster, dca.cluster, DeepImpute.cluster, DrImpute.cluster,
+#               scGNN.cluster, ALRA.cluster, scVI.cluster,
+#               VIPER.cluster, ncol = 3, nrow = 4, common.legend=T, legend="none")
+# dev.off()
+# 
+# # Competitions among methods
+# raw.perf <- sc_dropseq.cstcomp(raw.cst)
+# SCDD.perf <- sc_dropseq.cstcomp(SCDD.cst)
+# Diffusion.perf <- sc_dropseq.cstcomp(Diffusion.cst)
+# magic.perf <- sc_dropseq.cstcomp(magic.cst)
+# saver.perf <- sc_dropseq.cstcomp(saver.cst)
+# dca.perf <- sc_dropseq.cstcomp(dca.cst)
+# DeepImpute.perf <- sc_dropseq.cstcomp(DeepImpute.cst)
+# DrImpute.perf <- sc_dropseq.cstcomp(DrImpute.cst)
+# scGNN.perf <- sc_dropseq.cstcomp(scGNN.cst)
+# ALRA.perf <- sc_dropseq.cstcomp(ALRA.cst)
+# scVI.perf <- sc_dropseq.cstcomp(scVI.cst)
+# VIPER.perf <- sc_dropseq.cstcomp(VIPER.cst)
+# 
+# perf <- data.frame(raw.perf)
+# pf <- rbind(perf, SCDD.perf, Diffusion.perf,
+#             magic.perf, saver.perf, dca.perf,
+#             DeepImpute.perf, DrImpute.perf, scGNN.perf,
+#             ALRA.perf, scVI.perf, VIPER.perf)
+# rownames(pf) <- c('Raw', 'SCDD', 'SCDD(Diffusion)', 'MAGIC', 'SAVER',
+#             'DCA', 'DeepImpute', 'DrImpute', 'scGNN', 'ALRA', 'scVI', 'VIPER')
+# write.table(pf, "temp/sc_dropseq_perfs1.tsv", sep='\t')
