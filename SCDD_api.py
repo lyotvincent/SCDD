@@ -27,6 +27,7 @@ class SCDD:
         self.conservative = conservative
         self.neighbors = neighbors
         self.threshold = threshold
+        self.point = 1.01
         self.batch_size = batch_size
         if self.name == "Cellcycle":
             self.raw = "data/Cellcycle.raw.txt"
@@ -77,9 +78,9 @@ class SCDD:
                                          needTrans=self.Tran)
         if self.structure == "AnnData":
             self.log_data = self.data.X.toarray()
-            self.log_data = np.log(self.log_data + 1.01)
+            self.log_data = np.log(self.log_data + self.point)
         else:
-            self.log_data = np.log(self.data + 1.01)
+            self.log_data = np.log(self.data + self.point)
         print("Using neighbors:{0}.".format(self.neighbors))
         print("Using threshold:{0}.".format(self.threshold))
         if store:
@@ -94,7 +95,7 @@ class SCDD:
             elif self.neighbor_method == "SNN":
                 M = AnnDataSNN(self.data)
                 self.sparse = True
-            dropout_rate, null_genes = get_dropout_rate(self.log_data)
+            dropout_rate, null_genes = get_dropout_rate(self.log_data, np.log(self.point))
             Omega, Target = get_supervise(self.log_data , dropout_rate, null_genes, M, self.neighbors, self.threshold, self.sparse)
             SaveTargets(M, Omega, Target, dropout_rate, null_genes, sparse=self.sparse)
         # whether need to sperate A to batch

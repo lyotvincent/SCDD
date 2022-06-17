@@ -1,6 +1,4 @@
-import magic
 import os
-from dca.api import dca
 from utils.io import LoadData, SaveData
 import rpy2.robjects as robjects
 import pandas as pd
@@ -9,10 +7,10 @@ import anndata as ad
 import umap
 import scanpy as sc
 import time
-from deepimpute.multinet import MultiNet
 
 # MAGIC
 def imputeByMAGIC(expName, dataPath, labelPath=None, format="tsv"):
+    import magic
     try:
         modelName = 'MAGIC'
         X, y = LoadData(expName, dataPath, labelPath=labelPath, format=format)
@@ -28,6 +26,7 @@ def imputeByMAGIC(expName, dataPath, labelPath=None, format="tsv"):
 
 # DCA
 def imputeByDCA(expName, dataPath, labelPath=None, format='tsv'):
+    from dca.api import dca
     modelName = 'DCA'
     if format == 'tsv':
         data = pd.read_csv(dataPath, sep = '\t', index_col = 0)
@@ -40,6 +39,7 @@ def imputeByDCA(expName, dataPath, labelPath=None, format='tsv'):
         adata = ad.AnnData(np.array(data), obs=obs, var=var)
     else:
         adata = ad.read_h5ad(dataPath)
+        adata = ad.AnnData(adata.raw.X, obs=pd.DataFrame(index=adata.raw.obs_names), var=adata.raw.var)
     sc.pp.filter_genes(adata, min_counts=1)
     dca(adata, threads=7)
     if os.path.isdir("results") == False:
@@ -140,6 +140,7 @@ def imputeByscIGANs(expName, dataPath, labelPath=None, format="tsv", id=0):
 
 # DeepImpute
 def imputeByDeepImpute(expName, dataPath, labelPath=None, format="tsv", id=0):
+    from deepimpute.multinet import MultiNet
     try:
         modelName = "DeepImpute"
         X, y = LoadData(expName, dataPath, labelPath=labelPath, format=format)

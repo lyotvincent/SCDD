@@ -4,6 +4,7 @@ import pandas as pd
 import random
 from tqdm import tqdm
 import anndata as ad
+import scanpy as sc
 from scipy.sparse import csr_matrix, save_npz, load_npz
 import os
 
@@ -60,19 +61,18 @@ def LoadData(expName, dataPath, format="tsv",
                               var=pd.DataFrame(index=adata.var_names))
             else:
                 train_data = adata
+            train_data.obs['total_counts'] = train_data.X.sum(axis=1).A1
+            train_data.var['total_counts'] = train_data.X.sum(axis=0).A1
         elif format == "tsv":
-            df = pd.read_csv(dataPath, sep='\t', index_col=0)
+            adata = sc.read_csv(dataPath, delimiter='\t', dtype='int')
             if needTrans:
-                df = df.transpose()
-            adata = ad.AnnData(X=csr_matrix(np.array(df)),
-                               obs=pd.DataFrame(index=df.index),
-                               var=pd.DataFrame(index=df.columns))
+                adata = adata.transpose()
             cells = adata.obs_names
             genes = adata.var_names
             train_data = adata
             print("Data size:{0}".format(adata.shape))
-        train_data.obs['total_counts'] = train_data.X.sum(axis=1).A1
-        train_data.var['total_counts'] = train_data.X.sum(axis=0).A1
+            train_data.obs['total_counts'] = train_data.X.sum(axis=1)
+            train_data.var['total_counts'] = train_data.X.sum(axis=0)
         print("Load Data to AnnData OK.")
         return train_data, label
     else:

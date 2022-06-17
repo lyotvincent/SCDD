@@ -190,7 +190,7 @@ def get_mix_internal(xdata, point):
 
 
 # Return the parameters of mixed distribution and invalid gene sequence number
-def get_mix_parameters(count, point = np.log10(1.01)):
+def get_mix_parameters(count, point=np.log(1.01)):
     # count represents each type of cell, with rows representing cell changes and columns representing gene changes
     count = np.array(count)
     # The genes with very low expression were screened out
@@ -202,7 +202,7 @@ def get_mix_parameters(count, point = np.log10(1.01)):
         if i in null_genes:     # use nan to fill in invalid genes
             paralist[i] = np.repeat(np.nan, 5)
         else:
-            xdata = count[:,i]    
+            xdata = count[:, i]
             params = get_mix_internal(xdata, point)     # calculate the params of each columns
             paralist[i] = params
     return paralist, null_genes
@@ -228,8 +228,7 @@ def get_dropout_rate(count, point = np.log(1.01)):
         if paralist[i][0] == np.nan:    # dropout rate should be `nan` if the gene is invalid
             dropout_rate[i] = np.repeat(dropout_rate.shape[1], np.nan)
         else:
-            xdata = count[:, i]     
-            dropout_rate[i] = dhat(xdata, paralist[i])  
+            dropout_rate[i] = dhat(count[:, i], paralist[i])
     null_genes = null_genes.flatten()
     return dropout_rate.T, null_genes
 
