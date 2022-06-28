@@ -123,6 +123,7 @@ def Generate_fish(has_results=False):
         dataPath = "data/fish.raw.tsv"
         format = "tsv"
         RunComps(expName, dataPath, labelPath=None, format=format)
+
         # SCDD:150mins
         # scIGANs: 2.5days
         # scGNN: 192mins
