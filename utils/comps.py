@@ -1,4 +1,6 @@
+import magic
 import os
+from dca.api import dca
 from utils.io import LoadData, SaveData
 import rpy2.robjects as robjects
 import pandas as pd
@@ -7,10 +9,12 @@ import anndata as ad
 import umap
 import scanpy as sc
 import time
+from deepimpute.multinet import MultiNet
+from scipy.sparse import csr_matrix
+
 
 # MAGIC
 def imputeByMAGIC(expName, dataPath, labelPath=None, format="tsv"):
-    import magic
     try:
         modelName = 'MAGIC'
         X, y = LoadData(expName, dataPath, labelPath=labelPath, format=format)
@@ -24,19 +28,22 @@ def imputeByMAGIC(expName, dataPath, labelPath=None, format="tsv"):
         with open('log.txt', 'a+') as f:
             print('write MAGIC failed!', file=f)
 
+
 # DCA
 def imputeByDCA(expName, dataPath, labelPath=None, format='tsv'):
-    from dca.api import dca
     modelName = 'DCA'
     if format == 'tsv':
-        data = pd.read_csv(dataPath, sep = '\t', index_col = 0)
-        data = pd.DataFrame(data.T, dtype = int)
-        # obs用于保存细胞的信息
-        obs = pd.DataFrame(index=data.index)
-        # vars用于保存基因的信息
-        var_names = data.columns
-        var = pd.DataFrame(index=var_names)
-        adata = ad.AnnData(np.array(data), obs=obs, var=var)
+        adata = sc.read_csv(dataPath, delimiter='\t')
+        adata = adata.transpose()
+        print("converting to csr_matrix...")
+        adata.X = csr_matrix(adata.X)
+        # cells = adata.obs_names
+        # genes = adata.var_names
+        # data = pd.DataFrame(adata.T, dtype = int)
+        # obs = pd.DataFrame(index=data.index)
+        # var_names = data.columns
+        # var = pd.DataFrame(index=var_names)
+        # adata = ad.AnnData(np.array(data), obs=obs, var=var)
     else:
         adata = ad.read_h5ad(dataPath)
         adata = ad.AnnData(adata.raw.X, obs=pd.DataFrame(index=adata.raw.obs_names), var=adata.raw.var)
@@ -44,8 +51,8 @@ def imputeByDCA(expName, dataPath, labelPath=None, format='tsv'):
     dca(adata, threads=7)
     if os.path.isdir("results") == False:
         os.makedirs("results")
-    dir = "results/"+ modelName
-    if os.path.isdir(dir) == False:
+    dir = "results/" + modelName
+    if not os.path.isdir(dir):
         os.makedirs(dir)
     if format == 'tsv':
         df = pd.DataFrame(adata.X, index=adata.obs_names, columns=adata.var_names, dtype=int)
@@ -56,6 +63,7 @@ def imputeByDCA(expName, dataPath, labelPath=None, format='tsv'):
         path = dir + "/" + expName + "_" + modelName + "_impute.h5ad"
         adata.write_h5ad(path)
     print("write DCA successfully!")
+
 
 # SAVER
 def imputeBySAVER(expName, dataPath, labelPath=None, format="tsv", id=0):
@@ -77,6 +85,7 @@ def imputeBySAVER(expName, dataPath, labelPath=None, format="tsv", id=0):
     except:
         with open('log.txt', 'a+') as f:
             print('write SAVER failed!', file=f)
+
 
 # DrImpute
 def imputeByDrImpute(expName, dataPath, labelPath=None, format="tsv", id=0):
@@ -105,6 +114,7 @@ def imputeByDrImpute(expName, dataPath, labelPath=None, format="tsv", id=0):
         with open('log.txt', 'a+') as f:
             print('write DrImpute failed!', file=f)
 
+
 # VIPER
 def imputeByVIPER(expName, dataPath, labelPath=None, format="tsv", id=0):
     try:
@@ -126,21 +136,22 @@ def imputeByVIPER(expName, dataPath, labelPath=None, format="tsv", id=0):
         with open('log.txt', 'a+') as f:
             print('write VIPER failed!', file=f)
 
+
 # scIGANs
 def imputeByscIGANs(expName, dataPath, labelPath=None, format="tsv", id=0):
     try:
         modelName = "scIGANs"
         X, y = LoadData(expName, dataPath, labelPath=labelPath)
-        cmd = "scIGANs/scIGANs {0} -b {1} -o results/scIGANs -j {2}".format(dataPath, 128, expName+str(id))
+        cmd = "scIGANs/scIGANs {0} -b {1} -o results/scIGANs -j {2}".format(dataPath, 128, expName + str(id))
         os.system(cmd)
         print("write scIGANs successfully!")
     except:
         with open('log.txt', 'a+') as f:
             print('write scIGANs failed!', file=f)
 
+
 # DeepImpute
 def imputeByDeepImpute(expName, dataPath, labelPath=None, format="tsv", id=0):
-    from deepimpute.multinet import MultiNet
     try:
         modelName = "DeepImpute"
         X, y = LoadData(expName, dataPath, labelPath=labelPath, format=format)
@@ -153,6 +164,7 @@ def imputeByDeepImpute(expName, dataPath, labelPath=None, format="tsv", id=0):
     except:
         with open('log.txt', 'a+') as f:
             print('write DeepImpute failed!', file=f)
+
 
 # scTSSR
 def imputeByscTSSR(expName, dataPath, labelPath=None, format="tsv"):
@@ -175,6 +187,7 @@ def imputeByscTSSR(expName, dataPath, labelPath=None, format="tsv"):
     result = np.array(result)
     SaveData(expName, modelName, result, needTrans=False)
     print("write scTSSR successfully!")
+
 
 # scImpute
 def imputeByscImpute(expName, dataPath, labelPath=None, format="tsv"):
@@ -203,6 +216,7 @@ def imputeByscImpute(expName, dataPath, labelPath=None, format="tsv"):
     except:
         with open('log.txt', 'a+') as f:
             print('write scImpute failed!', file=f)
+
 
 # scGNN
 def imputeByscGNN(expName, dataPath, labelPath=None, format="tsv", id=0):
@@ -251,6 +265,7 @@ def imputeByscGNN(expName, dataPath, labelPath=None, format="tsv", id=0):
         with open('log.txt', 'a+') as f:
             print('write scGNN failed!', file=f)
 
+
 # EnImpute
 def imputeByEnImpute(expName, dataPath, labelPath=None, format="tsv"):
     modelName = "scImpute"
@@ -279,8 +294,3 @@ def imputeByALRA(expName, dataPath, labelPath=None, format="tsv", id=0):
     except:
         with open('log.txt', 'a+') as f:
             print('write ALRA failed!', file=f)
-
-
-
-
-

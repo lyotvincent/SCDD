@@ -14,7 +14,7 @@ genes = np.array([])
 
 def LoadData(expName, dataPath, format="tsv",
              labelPath=None, needTrans=True, labelHeader=None,
-             structure='Array', slot="raw"):
+             structure='Array', slot=""):
     """
     :rtype: tuple(np.array, np.array)
     :param expName: experiment name
@@ -61,26 +61,31 @@ def LoadData(expName, dataPath, format="tsv",
                               var=pd.DataFrame(index=adata.var_names))
             else:
                 train_data = adata
+                print("converting to csr_matrix...")
+                adata.X = csr_matrix(adata.X)
             train_data.obs['total_counts'] = train_data.X.sum(axis=1).A1
             train_data.var['total_counts'] = train_data.X.sum(axis=0).A1
         elif format == "tsv":
-            adata = sc.read_csv(dataPath, delimiter='\t', dtype='int')
+            adata = sc.read_csv(dataPath, delimiter='\t')
             if needTrans:
                 adata = adata.transpose()
+            print("converting to csr_matrix...")
+            adata.X = csr_matrix(adata.X)
             cells = adata.obs_names
             genes = adata.var_names
             train_data = adata
             print("Data size:{0}".format(adata.shape))
-            train_data.obs['total_counts'] = train_data.X.sum(axis=1)
-            train_data.var['total_counts'] = train_data.X.sum(axis=0)
+            train_data.obs['total_counts'] = train_data.X.sum(axis=1).A1
+            train_data.var['total_counts'] = train_data.X.sum(axis=0).A1
         print("Load Data to AnnData OK.")
         return train_data, label
     else:
         df = pd.DataFrame()
         if format == "tsv":
-            df = pd.read_csv(dataPath, sep='\t', index_col=0)
-            cells = df.columns
-            genes = df.index
+            adata = sc.read_csv(dataPath, delimiter='\t')
+            cells = adata.var_names
+            genes = adata.obs_names
+            df = pd.DataFrame(adata.X, index=genes, columns=cells)
         elif format == "h5ad":
             adata = ad.read_h5ad(dataPath)
             df = pd.DataFrame(adata.raw.X.todense(),

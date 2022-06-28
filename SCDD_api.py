@@ -3,13 +3,16 @@ import scanpy as sc
 from utils.io import *
 from utils.kernel import *
 from models.scdd import *
-from utils.prepropcess import get_dropout_rate, get_supervise, makeup_results, makeup_results_all, RobjKmeans, RobjSC3_svm, AnnDataSNN
+from utils.prepropcess import get_dropout_rate, get_supervise, makeup_results, makeup_results_all, RobjKmeans, \
+    RobjSC3_svm, AnnDataSNN
+
 modelName = "SCDD"
+
 
 class SCDD:
     def __init__(self, name=None, raw=None, label=None,
                  Tran=True, id=None, dropout=True, structure='AnnData',
-                 method="TFIDF", neighbor_method="SC3",filter=True, format="tsv", conservative=False,
+                 method="TFIDF", neighbor_method="SC3", filter=True, format="tsv", conservative=False,
                  neighbors=20, threshold=0.2, batch_size=1024):
         self.name = name
         self.raw = raw
@@ -27,8 +30,8 @@ class SCDD:
         self.conservative = conservative
         self.neighbors = neighbors
         self.threshold = threshold
-        self.point = 1.01
         self.batch_size = batch_size
+        self.point = 1.01
         if self.name == "Cellcycle":
             self.raw = "data/Cellcycle.raw.txt"
             self.label = "data/Cellcycle.label.txt"
@@ -70,15 +73,18 @@ class SCDD:
             self.label = "data/sc_dropseq.label.txt"
             self.Tran = True
 
-    def run(self, store = False):
+    def run(self, store=False):
         self.data, self.Label = LoadData(self.name, self.raw,
                                          labelPath=self.label,
                                          format=self.format,
                                          structure=self.structure,
                                          needTrans=self.Tran)
         if self.structure == "AnnData":
-            self.log_data = self.data.X.toarray()
-            self.log_data = np.log(self.log_data + self.point)
+            if isinstance(self.data.X, np.ndarray) is False:
+                self.log_data = self.data.X.toarray()
+                self.log_data = np.log(self.log_data + self.point)
+            else:
+                self.log_data = np.log(self.data.X + self.point)
         else:
             self.log_data = np.log(self.data + self.point)
         print("Using neighbors:{0}.".format(self.neighbors))
@@ -95,8 +101,9 @@ class SCDD:
             elif self.neighbor_method == "SNN":
                 M = AnnDataSNN(self.data)
                 self.sparse = True
-            dropout_rate, null_genes = get_dropout_rate(self.log_data, np.log(self.point))
-            Omega, Target = get_supervise(self.log_data , dropout_rate, null_genes, M, self.neighbors, self.threshold, self.sparse)
+            dropout_rate, null_genes = get_dropout_rate(self.log_data)
+            Omega, Target = get_supervise(self.log_data, dropout_rate, null_genes, M, self.neighbors, self.threshold,
+                                          self.sparse)
             SaveTargets(M, Omega, Target, dropout_rate, null_genes, sparse=self.sparse)
         # whether need to sperate A to batch
         if self.batch_size >= M.shape[0]:
@@ -106,18 +113,34 @@ class SCDD:
                 A = getA(self.data, method=self.method, filter=self.filter)
         else:
             A = self.data.X.todense() > 0
-        md = SC_Denoising(self.log_data, A, Omega, Target, batch_size=self.batch_size)
-        md.train(2000)
-        self.result = md.impute()
-        self.result, self.cresult = makeup_results_all(self.result, self.log_data, null_genes, dropout_rate, self.threshold)
-        self.result = np.exp(self.result) - 1.01 + 0.5
-        self.result = self.result.astype(np.int)
+        self.md = SC_Denoising(self.log_data, A, Omega, Target, batch_size=self.batch_size)
+        for i in range(4):
+            self.md.train(500)
+            self.result = self.md.impute()
+            self.result, self.cresult = makeup_results_all(self.result, self.log_data, null_genes, dropout_rate,
+                                                           self.threshold)
+            self.cresult = np.exp(self.cresult) - 1.01 + 0.5
+            self.cresult = self.cresult.astype(np.int)
+            # SaveData(self.name, modelName, self.result, format=self.format, id=self.id)
+            SaveData(self.name, modelName, self.cresult, format=self.format, id=self.id + i)
+        self.m_i = 6
+
+    def continous_running(self, n):
+        if self.neighbor_method == "SNN":
+            M, Omega, Target, dropout_rate, null_genes = LoadTargets(True)
+        else:
+            M, Omega, Target, dropout_rate, null_genes = LoadTargets(False)
+        self.md.train(n)
+        self.result = self.md.impute()
+        self.result, self.cresult = makeup_results_all(self.result, self.log_data, null_genes, dropout_rate,
+                                                       self.threshold)
         self.cresult = np.exp(self.cresult) - 1.01 + 0.5
         self.cresult = self.cresult.astype(np.int)
-        SaveData(self.name, modelName, self.result, format=self.format, id=self.id)
-        SaveData(self.name, modelName, self.cresult, format=self.format, id=self.id+1)
-    
-    def run_Diffusion(self, store = False):
+        # SaveData(self.name, modelName, self.result, format=self.format, id=self.id)
+        SaveData(self.name, modelName, self.cresult, format=self.format, id=self.id + self.m_i)
+        self.m_i += 1
+
+    def run_Diffusion(self, store=False):
         self.data, self.Label = LoadData(self.name, self.raw,
                                          labelPath=self.label,
                                          format=self.format,
@@ -128,7 +151,7 @@ class SCDD:
         else:
             M = RobjKmeans(self.data)
             dropout_rate, null_genes = get_dropout_rate(self.log_data)
-            Omega, Target = get_supervise(self.log_data , dropout_rate, null_genes, M)
+            Omega, Target = get_supervise(self.log_data, dropout_rate, null_genes, M)
             SaveTargets(M, Omega, Target, dropout_rate, null_genes)
         self.result = Target
         self.result = makeup_results(self.result, self.log_data, null_genes, dropout_rate, self.threshold)

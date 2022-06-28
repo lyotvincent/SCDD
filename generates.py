@@ -3,7 +3,7 @@
 # All of the results will be saved in `results` fold
 from utils.comps import *
 from utils.purity import cal_purity
-# from SCDD_api import *
+from SCDD_api import *
 import os
 import pandas as pd
 
@@ -201,3 +201,4 @@ def Generate_Bladder(has_results=False):
 # Generate_sc_10x(has_results=False)
 Generate_Timecourse(has_results=True)
 # Generate_sc_dropseq(has_results=True)
+# imputeByDCA("immune", "data/TS_immune.h5ad", format='h5ad')
