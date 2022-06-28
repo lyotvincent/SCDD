@@ -11,9 +11,32 @@ modelName = "SCDD"
 
 class SCDD:
     def __init__(self, name=None, raw=None, label=None,
-                 Tran=True, id=None, dropout=True, structure='AnnData',
-                 method="TFIDF", neighbor_method="SC3", filter=True, format="tsv", conservative=False,
-                 neighbors=20, threshold=0.2, batch_size=1024):
+                 Tran=True, id=None, dropout=True, structure='AnnData', max_epoch=500,
+                 method="TFIDF", neighbor_method="SC3", filter=True, format="tsv", conservative=True,
+                 neighbors=20, threshold=0.2, batch_size=5000):
+        """
+        :param name: the name of experiments or dataset to identify the imputed results or you can use the name
+                    in our default experiments;
+        :param raw: the raw data path, except format: `.tsv` and `.h5ad`, make sure that your delimiter in
+                    .tsv file is `\t` and your raw data is .X in .h5ad file.
+        :param label: the path to the annotation of datas, default none.
+        :param Tran: if your data layout is: columns are cells and rows are genes, set this param `True`, else `False`.
+        :param id: the id number to identify different results from the same methods, default None.
+        :param dropout: whether need dropout in Denoising, default `True`;
+        :param structure: the main structure of the pipline, default `AnnData`;
+        :param max_epoch: the max epoch of Denoising, default 500.
+        :param method: the method to generate graph embedding item, default `TFIDF`.
+        :param neighbor_method: the method to generate concensus matrix and neighbor relations, default `SC3`. if the
+                    number of cells too large, it will automatically turn to `SNN`.
+        :param filter: whether need to filter genes when generating concensus mantrix, default `True`.
+        :param format: the format of input raw data file, support `.tsv` and `.h5ad`
+        :param conservative: whether needs conservative results, default `True`.
+        :param neighbors: the neighbors of each cell, default 20.
+        :param threshold: the threshold of whether the point is a drop-out point, the drop-out rate higher than this
+                        value will be treated as a drop-out point, default 0.2.
+        :param batch_size: the batch_size of each input in the nerual network when denoising, default 5000, which means
+                        if cell number are less than 5000, the total batch will be 1.
+        """
         self.name = name
         self.raw = raw
         self.label = label
@@ -26,6 +49,7 @@ class SCDD:
         self.filter = filter
         self.format = format
         self.method = method
+        self.max_epoch = max_epoch
         self.neighbor_method = neighbor_method
         self.conservative = conservative
         self.neighbors = neighbors
@@ -115,7 +139,7 @@ class SCDD:
             A = self.data.X.todense() > 0
         self.md = SC_Denoising(self.log_data, A, Omega, Target, batch_size=self.batch_size)
         for i in range(4):
-            self.md.train(500)
+            self.md.train(self.max_epoch)
             self.result = self.md.impute()
             self.result, self.cresult = makeup_results_all(self.result, self.log_data, null_genes, dropout_rate,
                                                            self.threshold)
