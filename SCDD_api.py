@@ -4,18 +4,18 @@ from utils.io import *
 from utils.kernel import *
 from models.scdd import *
 from utils.prepropcess import get_dropout_rate, get_supervise, makeup_results, makeup_results_all, RobjKmeans, \
-    RobjSC3_svm, AnnDataSNN
+    AnnDataSNN
 
 modelName = "SCDD"
 
 
 class SCDD:
     def __init__(self, name=None, raw=None, label=None,
-                 Tran=True, id=None, dropout=True, structure='AnnData', max_epoch=500,
+                 Tran=True, id=0, dropout=True, structure='AnnData', max_epoch=500,
                  method="TFIDF", neighbor_method="SC3", filter=True, format="tsv", conservative=True,
-                 neighbors=20, threshold=0.2, batch_size=5000):
+                 neighbors=20, threshold=0.2, batch_size=5000, slot=None):
         """
-        :param name: the name of experiments or dataset to identify the imputed results or you can use the name
+        :param name: the name of experiments or dataset to identify the imputed results. You can use the name
                     in our default experiments;
         :param raw: the raw data path, except format: `.tsv` and `.h5ad`, make sure that your delimiter in
                     .tsv file is `\t` and your raw data is .X in .h5ad file.
@@ -36,6 +36,7 @@ class SCDD:
                         value will be treated as a drop-out point, default 0.2.
         :param batch_size: the batch_size of each input in the nerual network when denoising, default 5000, which means
                         if cell number are less than 5000, the total batch will be 1.
+        :param slot: for format `h5ad`, which slot contains raw data, default adata.X.
         """
         self.name = name
         self.raw = raw
@@ -56,6 +57,7 @@ class SCDD:
         self.threshold = threshold
         self.batch_size = batch_size
         self.point = 1.01
+        self.slot=slot
         if self.name == "Cellcycle":
             self.raw = "data/Cellcycle.raw.txt"
             self.label = "data/Cellcycle.label.txt"
@@ -98,11 +100,21 @@ class SCDD:
             self.Tran = True
 
     def run(self, store=False):
+        """
+        Do Diffusion and Denoising, and save the results in ./results
+        :param store: if `True`, it will load the temp data from ./temp. This options is for the running SCDD twice
+        and more.
+        """
+        fm = self.raw.split('.')[-1]
+        if self.format is None:
+            self.format = fm    # automatically identify the format
+            print("Identified raw data format: {0}".format(self.format))
         self.data, self.Label = LoadData(self.name, self.raw,
                                          labelPath=self.label,
                                          format=self.format,
                                          structure=self.structure,
-                                         needTrans=self.Tran)
+                                         needTrans=self.Tran,
+                                         slot=self.slot)
         if self.structure == "AnnData":
             if isinstance(self.data.X, np.ndarray) is False:
                 self.log_data = self.data.X.toarray()
@@ -113,6 +125,12 @@ class SCDD:
             self.log_data = np.log(self.data + self.point)
         print("Using neighbors:{0}.".format(self.neighbors))
         print("Using threshold:{0}.".format(self.threshold))
+        print("Using max epoch:{0}.".format(self.max_epoch))
+        print("Using batch size:{0}.".format(self.batch_size))
+
+        # only support SNN if the number of cells are more than 10000
+        if self.data.shape[0] >= 10000:
+            self.neighbor_method = "SNN"
         if store:
             if self.neighbor_method == "SNN":
                 M, Omega, Target, dropout_rate, null_genes = LoadTargets(True)

@@ -14,7 +14,7 @@ genes = np.array([])
 
 def LoadData(expName, dataPath, format="tsv",
              labelPath=None, needTrans=True, labelHeader=None,
-             structure='Array', slot=""):
+             structure='Array', slot=None):
     """
     :rtype: tuple(np.array, np.array)
     :param expName: experiment name
@@ -23,6 +23,7 @@ def LoadData(expName, dataPath, format="tsv",
     :param needTrans: if true, transpose the origin data.
     :param labelHeader: need to read the first line or not.
     :param structure: data sturcture used in our method, Array or AnnData.
+    :param slot: for format `h5ad`, which slot contains raw data, default adata.X
     :return: training data and training label
     """
     global cells
@@ -56,6 +57,7 @@ def LoadData(expName, dataPath, format="tsv",
             cells = adata.obs_names
             genes = adata.var_names
             if slot == 'raw':
+                print("Archieving raw data from slot: {0}".format(slot))
                 train_data = ad.AnnData(X=adata.raw.X,
                               obs=pd.DataFrame(index=adata.obs_names),
                               var=pd.DataFrame(index=adata.var_names))
