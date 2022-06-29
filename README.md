@@ -47,17 +47,28 @@ python run_SCDD.py
 ```
 
 The meaning of optional argument in ***run_SCDD.py*** is listed below:
-  **-h, --help**: show this help message and exit
-  **-n, --name**:  the name of experiments or dataset to identify the imputed results
-  **-r, --raw**: the raw data path, except format: `.tsv` and `.h5ad`, make sure that your delimiter in .tsv file is  and your raw data is .X in .h5ad file.
-  **-tr, --trans**: if raw data layout is: columns are cells and rows are genes, set this param `True`, else `False`.
-  **-i, --id:** the id number to identify different results from the same methods, default 0.
-  **-f, --format**: the format of input raw data file, support `tsv` and `h5ad`, default None, this will automatically identify the format by the suffix of the raw file.
-  **-me, --max-epoch**: the max epoch of Denoising, default 500.
-  **-nb, --neighbors**: the neighbors of each cell, default 20.
-  **-t, --threshold**: the threshold of whether the point is a drop-out point, the drop-out rate higher than this value will be treated as a drop-out point, default 0.2.
-  **-nm, --neighbor-method**: the method to generate concensus matrix and neighbors relations, default `SC3`. if the number of cells is more than 10000, it will automatically turn to `SNN`.
-  **-b, --batch-size**: the batch_size of each input in the nerual network when denoising, default 5000, which means if cell number are less than 5000, the total batch will be 1.
+
+ **-h, --help**: show this help message and exit
+
+ **-n, --name**:  the name of experiments or dataset to identify the imputed results 
+
+ **-r, --raw**: the raw data path, except format: `.tsv` and `.h5ad`, make sure that your delimiter in .tsv file is  and your raw data is .X in .h5ad file.
+
+ **-tr, --trans**: if raw data layout is: columns are cells and rows are genes, set this param `True`, else `False`.
+
+ **-i, --id:** the id number to identify different results from the same methods, default 0.
+
+ **-f, --format**: the format of input raw data file, support `tsv` and `h5ad`, default None, this will automatically identify the format by the suffix of the raw file.
+
+ **-me, --max-epoch**: the max epoch of Denoising, default 500.
+
+ **-nb, --neighbors**: the neighbors of each cell, default 20.
+
+ **-t, --threshold**: the threshold of whether the point is a drop-out point, the drop-out rate higher than this value will be treated as a drop-out point, default 0.2.
+
+ **-nm, --neighbor-method**: the method to generate concensus matrix and neighbors relations, default `SC3`. if the number of cells is more than 10000, it will automatically turn to `SNN`.
+
+ **-b, --batch-size**: the batch_size of each input in the nerual network when denoising, default 5000, which means if cell number are less than 5000, the total batch will be 1.
 
 ### Examples:
 
