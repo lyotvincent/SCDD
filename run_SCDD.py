@@ -1,6 +1,4 @@
 import argparse
-from SCDD_api import *
-
 
 def shellAccept():
     try:
@@ -34,6 +32,7 @@ def shellAccept():
 if __name__ == '__main__':
     parser = shellAccept()
     args = vars(parser.parse_args())
+    from SCDD_api import *
     e = SCDD(name=args['name'],
              raw=args['raw'],
              id=args['id'],
