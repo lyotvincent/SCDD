@@ -21,10 +21,12 @@ s_dataPath = ['data/liver.raw.tsv',
             'results/DeepImpute/liver_DeepImpute_impute.tsv',
             'results/scGNN/liver_scGNN_impute.tsv',
             'results/MAGIC/liver_MAGIC_impute.tsv',
-            'results/ALRA/liver_ALRA_impute.tsv']
+            'results/ALRA/liver_ALRA_impute.tsv',
+            'results/scTSSR/liver_scTSSR_impute.tsv',
+            'results/EnImpute/liver_EnImpute_impute.tsv']
 
 s_mtName = ['Raw', 'SCDD', 'SCDD(Diffusion)', 'scIGANs', 'VIPER',
-          'SAVER', 'DCA', 'scVI', 'DrImpute', 'DeepImpute', 'scGNN', 'MAGIC', 'ALRA']
+          'SAVER', 'DCA', 'scVI', 'DrImpute', 'DeepImpute', 'scGNN', 'MAGIC', 'ALRA', 'scTSSR', 'EnImpute']
 
 labelPath = 'data/liver.label.txt'
 label = np.array(pd.read_csv(labelPath, header=None))
@@ -112,18 +114,18 @@ def generate_figures(dataPath, label, mtName, layouts, axs, type="paga", gene=No
                     axs[i, j].title.set_text(mtName[cols*i+j])
 
 # # plot for paga
-fige, axse = plt.subplots(1, 3, figsize=(9,3),constrained_layout=True)
-generate_figures(s_dataPath[:3], label, s_mtName[:3], (1, 3), axse, type="paga")
-fige.savefig("paper/liver/liver_paga31.svg")
+# fige, axse = plt.subplots(1, 3, figsize=(9,3),constrained_layout=True)
+# generate_figures(s_dataPath[:3], label, s_mtName[:3], (1, 3), axse, type="paga")
+# fige.savefig("paper/liver/liver_paga31.pdf")
 
-fige, axse = plt.subplots(2, 5, figsize=(15,6),constrained_layout=True)
-generate_figures(s_dataPath[3:], label, s_mtName[3:], (2, 5), axse, type="paga")
-fige.savefig("paper/liver/liver_paga32.svg")
+fige, axse = plt.subplots(3, 5, figsize=(15,9),constrained_layout=True)
+generate_figures(s_dataPath, label, s_mtName, (3, 5), axse, type="paga")
+fige.savefig("paper/liver/liver_paga4.eps", dpi=400)
 
-fige, axse = plt.subplots(1, 3, figsize=(9,3),constrained_layout=True)
-generate_figures(s_dataPath[:3], label, s_mtName[:3], (1, 3), axse, type="umap")
-fige.savefig("paper/liver/liver_umap31.svg")
+# fige, axse = plt.subplots(1, 3, figsize=(9,3),constrained_layout=True)
+# generate_figures(s_dataPath[:3], label, s_mtName[:3], (1, 3), axse, type="umap")
+# fige.savefig("paper/liver/liver_umap31.pdf")
 
-fige, axse = plt.subplots(2, 5, figsize=(15,6),constrained_layout=True)
-generate_figures(s_dataPath[3:], label, s_mtName[3:], (2, 5), axse, type="umap")
-fige.savefig("paper/liver/liver_umap32.svg")
+fige, axse = plt.subplots(3, 5, figsize=(15,9),constrained_layout=True)
+generate_figures(s_dataPath, label, s_mtName, (3, 5), axse, type="umap")
+fige.savefig("paper/liver/liver_umap4.eps", dpi=400)

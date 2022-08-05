@@ -8,14 +8,15 @@ cc.pp <- function(st_data, st_label, st_genes, all=T, has.name=F, Ercc=F){
     st_genes[which(st_genes$gene == '-'), 'gene'] <- st_genes[which(st_genes$gene == '-'), 'ID']
     st_genes[which(duplicated(st_genes$gene)), 'gene'] <- st_genes[which(duplicated(st_genes$gene)), 'ID']
     rownames(st_genes) <- st_genes$ID
+    if(has.name == F){
+      rownames(st_data) <- st_data[, 1]
+      st_data <- st_data[, -1]    # 去除第一列
+    }
     if(all == F){
-        rownames(st_data) <- lapply(st_data[,1], function(x){x <- st_genes[x, 'gene']})
+        rownames(st_data) <- lapply(rownames(st_data), function(x){x <- st_genes[x, 'gene']})
     }
     else {
         rownames(st_data) <- st_genes[, 'gene']
-    }
-    if(has.name == F){
-        st_data <- st_data[, -1]    # 去除第一列 
     }
     if(Ercc==F){
         for(elem in c("Ercc1", "Ercc6l2", "Ercc8", "Ercc2", "Ercc3", "Ercc4", "Ercc5", "Ercc6", "Ercc6l")){
@@ -38,13 +39,13 @@ cc.plot <- function(st_data, st_label, title, Ercc=F){
         Seurat_st <- RunUMAP(Seurat_st, features = all.genes)
     }
     else{
-        Seurat_st <- RunUMAP(Seurat_st, 
-            features = as.factor(c("Ercc1", "Ercc6l2", "Ercc8", 
-                                   "Ercc2", "Ercc3", "Ercc4", 
+        Seurat_st <- RunUMAP(Seurat_st,
+            features = as.factor(c("Ercc1", "Ercc6l2", "Ercc8",
+                                   "Ercc2", "Ercc3", "Ercc4",
                                    "Ercc5", "Ercc6", "Ercc6l")))
     }
-    cluster.plot <- DimPlot(Seurat_st, reduction = "umap", pt.size = 0.8)+ 
-      labs(x="UMAP 1",y="UMAP 2",title=title) + 
+    cluster.plot <- DimPlot(Seurat_st, reduction = "umap", pt.size = 0.8)+
+      labs(x="UMAP 1",y="UMAP 2",title=title) +
       theme(plot.title = element_text(hjust = 0.5, face="plain", size = 12),
             legend.title=element_text("Celltypes"),
             legend.position="bottom",
@@ -89,6 +90,8 @@ DrImpute.path <- "results/DrImpute/Cellcycle_DrImpute_impute.tsv"
 VIPER.path <- "results/VIPER/Cellcycle_VIPER_impute.tsv"
 scIGANs.path <- "results/scIGANs/Cellcycle_scIGANs_impute.tsv"
 scVI.path <- "results/scVI/Cellcycle_scVI_impute.tsv"
+scTSSR.path <- "results/scTSSR/Cellcycle_scTSSR_impute.tsv"
+EnImpute.path <- "results/EnImpute/Cellcycle_EnImpute_impute.tsv"
 
 # total plot without Erccs
 raw.ne_plot <- noErcc(raw.path, "Raw")
@@ -103,6 +106,8 @@ DrImpute.ne_plot <- noErcc(DrImpute.path, "DrImpute")
 VIPER.ne_plot <- noErcc(VIPER.path, "VIPER")
 scIGANs.ne_plot <- noErcc(scIGANs.path, "scIGANs")
 scVI.ne_plot <- noErcc(scVI.path, "scVI")
+scTSSR.ne_plot <- noErcc(scTSSR.path, "scTSSR", all=F, has.name = T)
+EnImpute.ne_plot <- noErcc(EnImpute.path, "EnImpute", has.name = T)
 
 # Ercc plot
 raw.e_plot <- Ercc(raw.path, "Raw")
@@ -117,24 +122,25 @@ DrImpute.e_plot <- Ercc(DrImpute.path, "DrImpute")
 VIPER.e_plot <- Ercc(VIPER.path, "VIPER")
 scIGANs.e_plot <- Ercc(scIGANs.path, "scIGANs")
 scVI.e_plot <- Ercc(scVI.path, "scVI")
+scTSSR.e_plot <- Ercc(scTSSR.path, "scTSSR", all=F, has.name = T)
+EnImpute.e_plot <- Ercc(EnImpute.path, "EnImpute", has.name = T)
 
-noErcc.plot.s <- ggarrange(raw.ne_plot, SCDD.ne_plot, Diffusion.ne_plot, 
+noErcc.plot.s <- ggarrange(raw.ne_plot, SCDD.ne_plot, Diffusion.ne_plot,
                        magic.ne_plot, saver.ne_plot, dca.ne_plot,
                        ALRA.ne_plot, DeepImpute.ne_plot, DrImpute.ne_plot,
                        VIPER.ne_plot, scIGANs.ne_plot, scVI.ne_plot,
-             nrow=2, ncol=6, legend="bottom", common.legend=T)
+                       scTSSR.ne_plot, EnImpute.ne_plot,
+             nrow=2, ncol=7, legend="bottom", common.legend=T)
 
 Ercc.plot.s <- ggarrange(raw.e_plot, SCDD.e_plot, Diffusion.e_plot,
                        magic.e_plot, saver.e_plot, dca.e_plot,
                        ALRA.e_plot, DeepImpute.e_plot, DrImpute.e_plot,
                        VIPER.e_plot, scIGANs.e_plot, scVI.e_plot,
-             nrow=2, ncol=6, legend="bottom", common.legend=T)
+                       scTSSR.e_plot, EnImpute.e_plot,
+             nrow=2, ncol=7, legend="bottom", common.legend=T)
 
 # Figures
-svg("paper/Cellcycle/Cellcycle_noErcc1.svg", 11, 4)
-noErcc.plot.s
-dev.off()
+ggsave("paper/Cellcycle/Cellcycle_noErcc4.eps", plot = noErcc.plot.s, width = 12.5, height = 4, dpi = 400)
 
-svg("paper/Cellcycle/Cellcycle_Ercc1.svg", 11, 4)
-Ercc.plot.s
+ggsave("paper/Cellcycle/Cellcycle_Ercc4.eps", plot = Ercc.plot.s, width = 12.5, height = 4, dpi = 400)
 dev.off()

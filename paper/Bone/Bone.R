@@ -107,6 +107,8 @@ scGNN.path <- paste0("results/scGNN/Bone_scGNN_impute.tsv")
 ALRA.path <- paste0("results/ALRA/Bone_ALRA_impute.tsv")
 scIGANs.path <- paste0("results/scIGANs/Bone_scIGANs_impute.tsv")
 scVI.path <- paste0("results/scVI/Bone_scVI_impute.tsv")
+scTSSR.path <- paste0("results/scTSSR/Bone_scTSSR_impute.tsv")
+EnImpute.path <- paste0("results/EnImpute/Bone_EnImpute_impute.tsv")
 
 raw <- read.table(raw.path, sep = '\t',  header = TRUE)
 label <- read.table(label.path, sep = '\t',  header = FALSE)
@@ -119,8 +121,10 @@ DeepImpute <- read.table(DeepImpute.path, sep = '\t',  header = TRUE)
 DrImpute <- read.table(DrImpute.path, sep = '\t',  header = TRUE)
 scGNN <- read.table(scGNN.path, sep = '\t',  header = TRUE)
 ALRA <- read.table(ALRA.path, sep = '\t',  header = TRUE)
-scIGANs <- read.table(scIGANs.path, sep = '\t',  header = TRUE) 
+scIGANs <- read.table(scIGANs.path, sep = '\t',  header = TRUE)
 scVI <- read.table(scVI.path, sep = '\t',  header = TRUE)
+scTSSR <- read.table(scTSSR.path, sep = '\t',  header = TRUE)
+EnImpute <- read.table(EnImpute.path, sep = '\t',  header = TRUE)
 
 
 raw.cluster <- cluster(raw, label, F)
@@ -135,6 +139,8 @@ scGNN.cluster <- cluster(scGNN, label, F)
 ALRA.cluster <- cluster(ALRA, label, F, do_norm = FALSE)
 scIGANs.cluster <- cluster(scIGANs, label, T)
 scVI.cluster <- cluster(scVI, label, F)
+scTSSR.cluster <- cluster(scTSSR, label, T)
+EnImpute.cluster <- cluster(EnImpute, label, T)
 
 raw.perf <- no_uk_comp(raw.cluster, label)
 SCDD.perf <- no_uk_comp(SCDD.cluster, label)
@@ -148,15 +154,18 @@ scGNN.perf <- no_uk_comp(scGNN.cluster, label)
 ALRA.perf <- no_uk_comp(ALRA.cluster, label)
 scIGANs.perf <- no_uk_comp(scIGANs.cluster, label)
 scVI.perf <- no_uk_comp(scVI.cluster, label)
+scTSSR.perf <- no_uk_comp(scTSSR.cluster, label)
+EnImpute.perf <- no_uk_comp(EnImpute.cluster, label)
 
 
 perf <- data.frame(raw.perf)
 pf <- rbind(perf, SCDD.perf, Diffusion.perf, magic.perf, saver.perf, dca.perf,
-            DeepImpute.perf, DrImpute.perf, scGNN.perf, ALRA.perf, scIGANs.perf, scVI.perf)
+            DeepImpute.perf, DrImpute.perf, scGNN.perf, ALRA.perf, scIGANs.perf, scVI.perf, scTSSR.perf, EnImpute.perf)
 rownames(pf) <- c('Raw', 'SCDD', 'SCDD(Diffusion)', 'MAGIC', 'SAVER', 'DCA',
-                  'DeepImpute', 'DrImpute', 'scGNN', 'ALRA', 'scIGANs', 'scVI')
+                  'DeepImpute', 'DrImpute', 'scGNN', 'ALRA', 'scIGANs', 'scVI', 'scTSSR', 'EnImpute')
+# perfs1 <- read.table("temp/Bone_perfs1.tsv")
 write.table(pf, "temp/Bone_perfs1.tsv", sep='\t')
-
+# perfs1 <- rbind(perfs1, scTSSR.perf, EnImpute.perf)
 
 raw.ident <- no_uk_ident(raw.cluster, label)
 SCDD.ident <- no_uk_ident(SCDD.cluster, label)
@@ -170,6 +179,8 @@ scGNN.ident <- no_uk_ident(scGNN.cluster, label)
 ALRA.ident <- no_uk_ident(ALRA.cluster, label)
 scIGANs.ident <- no_uk_ident(scIGANs.cluster, label)
 scVI.ident <- no_uk_ident(scVI.cluster, label)
+scTSSR.ident <- no_uk_ident(scTSSR.cluster, label)
+EnImpute.ident <- no_uk_ident(EnImpute.cluster, label)
 
 dt <- which(label=='Unknown')    # 找到标签为Unknown的数据后删除
 ulabel <- label[-dt,]

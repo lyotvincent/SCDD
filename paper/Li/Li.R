@@ -44,6 +44,7 @@ Li.st <- function(path, has.name=F){
 
 Li.cst <- function(path, has.name=F){
     data <- read.table(path, sep = '\t',  header = TRUE)
+    # data <- dplyr::mutate_all(data, as.integer)
     cst <- getUmap(data, label, has.name, cluster=T)
     return (cst)
 }
@@ -51,7 +52,7 @@ Li.cst <- function(path, has.name=F){
 Li.umap <- function(st, title, has.name=F){
     umap.plot <- DimPlot(st, reduction = "umap", pt.size = 0.5)+
       labs(x="UMAP 1",y="UMAP 2",title=title)+ 
-      theme(title = element_text(size = 12),
+      theme(title = element_text(size = 12, family = "sans"),
         plot.title = element_text(hjust = 0.5, face="plain"),
         axis.line = element_blank(),
         axis.text = element_blank(),
@@ -129,6 +130,8 @@ scGNN.path <- paste0("results/scGNN/Li_scGNN_impute.tsv")
 ALRA.path <- paste0("results/ALRA/Li_ALRA_impute.tsv")
 VIPER.path <- paste0("results/VIPER/Li_VIPER_impute.tsv")
 scVI.path <- paste0("results/scVI/Li_scVI_impute.tsv")
+scTSSR.path <- paste0("results/scTSSR/Li_scTSSR_impute.tsv")
+EnImpute.path <- paste0("results/EnImpute/Li_EnImpute_impute.tsv")
 
 # run Seurat's umap and visualization
 raw.st <- Li.st(raw.path)
@@ -144,6 +147,8 @@ scGNN.st <- Li.st(scGNN.path)
 ALRA.st <- Li.st(ALRA.path)
 scVI.st <- Li.st(scVI.path)
 VIPER.st <- Li.st(VIPER.path)
+scTSSR.st <- Li.st(scTSSR.path, has.name = T)
+EnImpute.st <- Li.st(EnImpute.path, has.name = T)
 
 raw.umap <- Li.umap(raw.st, "Raw")
 SCDD.umap <- Li.umap(SCDD.st, "SCDD(Denoising)")
@@ -158,17 +163,18 @@ scGNN.umap <- Li.umap(scGNN.st, "scGNN")
 ALRA.umap <- Li.umap(ALRA.st, "ALRA")
 scVI.umap <- Li.umap(scVI.st, "scVI")
 VIPER.umap <- Li.umap(VIPER.st, "VIPER")
+scTSSR.umap <- Li.umap(scTSSR.st, "scTSSR")
+EnImpute.umap <- Li.umap(EnImpute.st, "EnImpute")
 
-svg("paper/Li/Li_umap31.svg", 9, 3)
-ggarrange(raw.umap, SCDD.umap, Diffusion.umap, 
-              ncol = 3, nrow = 1, common.legend=T, legend="none")
-dev.off()
+# svg("paper/Li/Li_umap31.svg", 9, 3)
+# ggarrange(raw.umap, SCDD.umap, Diffusion.umap, 
+#               ncol = 3, nrow = 1, common.legend=T, legend="none")
+# dev.off()
+plt <- ggarrange(raw.umap, SCDD.umap, Diffusion.umap, saver.umap, dca.umap, DrImpute.umap, ALRA.umap, VIPER.umap,
+                 scTSSR.umap, EnImpute.umap, DeepImpute.umap, scIGANs.umap, scVI.umap, scGNN.umap, magic.umap,
+                 ncol = 5, nrow = 3, common.legend=T, legend="bottom")
+ggsave("paper/Li/Li_umap4.eps", plot = plt, width = 14, height = 9, dpi = 400)
 
-svg("paper/Li/Li_umap32.svg", 15, 7)
-ggarrange(saver.umap, dca.umap, DrImpute.umap, ALRA.umap, VIPER.umap,
-          scGNN.umap, magic.umap, DeepImpute.umap, scIGANs.umap, scVI.umap,
-          ncol = 5, nrow = 2, common.legend=T, legend="bottom")
-dev.off()
 
 # run Seurat's cluster and save the Idents
 raw.cst <- Li.cst(raw.path)
@@ -184,12 +190,15 @@ scGNN.cst <- Li.cst(scGNN.path)
 ALRA.cst <- Li.cst(ALRA.path)
 scVI.cst <- Li.cst(scVI.path)
 VIPER.cst <- Li.cst(VIPER.path)
+scTSSR.cst <- Li.cst(scTSSR.path, has.name = T)
+EnImpute.cst <- Li.cst(EnImpute.path, has.name = T)
+
 
 predicts <- data.frame(as.numeric(as.factor(cluster[,1])), 
                  Idents(raw.cst), Idents(SCDD.cst), Idents(Diffusion.cst), Idents(scIGANs.cst), 
                  Idents(magic.cst), Idents(saver.cst), Idents(dca.cst),
                  Idents(DeepImpute.cst), Idents(DrImpute.cst), Idents(scGNN.cst),
-                 Idents(ALRA.cst), Idents(scVI.cst), Idents(VIPER.cst))
+                 Idents(ALRA.cst), Idents(scVI.cst), Idents(VIPER.cst), Idents(scTSSR.cst), Idents(EnImpute.cst))
 write.table(predicts, file='temp/Li_predicts1.tsv', sep='\t')
 
 # Visualization of clusters
@@ -206,17 +215,20 @@ scGNN.cluster <- Li.cluster(scGNN.cst, "scGNN")
 ALRA.cluster <- Li.cluster(ALRA.cst, "ALRA")
 scVI.cluster <- Li.cluster(scVI.cst, "scVI")
 VIPER.cluster <- Li.cluster(VIPER.cst, "VIPER")
+scTSSR.cluster <- Li.cluster(scTSSR.cst, "scTSSR")
+EnImpute.cluster <- Li.cluster(EnImpute.cst, "EnImpute")
 
-svg("paper/Li/Li_cluster31.svg", 9, 3)
-ggarrange(raw.cluster, SCDD.cluster, Diffusion.cluster,  
-             
-          ncol = 3, nrow = 1, common.legend=T, legend="none")
-dev.off()
+# svg("paper/Li/Li_cluster31.svg", 9, 3)
+# ggarrange(raw.cluster, SCDD.cluster, Diffusion.cluster,  
+#              
+#           ncol = 3, nrow = 1, common.legend=T, legend="none")
+# dev.off()
 
-svg("paper/Li/Li_cluster32.svg", 15, 6.5)
-ggarrange(saver.cluster, dca.cluster, DrImpute.cluster, ALRA.cluster, VIPER.cluster,
-    scGNN.cluster, magic.cluster, DeepImpute.cluster, scIGANs.cluster, scVI.cluster,
-          ncol = 5, nrow = 2, common.legend=T, legend="none")
+plt <- ggarrange(raw.cluster, SCDD.cluster, Diffusion.cluster, saver.cluster, dca.cluster, DrImpute.cluster, ALRA.cluster, VIPER.cluster,
+    scGNN.cluster, magic.cluster, DeepImpute.cluster, scIGANs.cluster, scVI.cluster, scTSSR.cluster, EnImpute.cluster,
+          ncol = 5, nrow = 3, common.legend=T, legend="none")
+
+ggsave("paper/Li/Li_cluster4.eps", plot = plt, width = 14, height = 8.5, dpi = 400)
 
 dev.off()
 
@@ -228,25 +240,27 @@ dev.off()
 
 
 # Competitions among methods
-# raw.perf <- Li.cstcomp(raw.cst)
-# SCDD.perf <- Li.cstcomp(SCDD.cst)
-# Diffusion.perf <- Li.cstcomp(Diffusion.cst)
-# scIGANs.perf <- Li.cstcomp(scIGANs.cst)
-# magic.perf <- Li.cstcomp(magic.cst)
-# saver.perf <- Li.cstcomp(saver.cst)
-# dca.perf <- Li.cstcomp(dca.cst)
-# DeepImpute.perf <- Li.cstcomp(DeepImpute.cst)
-# DrImpute.perf <- Li.cstcomp(DrImpute.cst)
-# scGNN.perf <- Li.cstcomp(scGNN.cst)
-# ALRA.perf <- Li.cstcomp(ALRA.cst)
-# scVI.perf <- Li.cstcomp(scVI.cst)
-# VIPER.perf <- Li.cstcomp(VIPER.cst)
-# 
-# perf <- data.frame(raw.perf)
-# pf <- rbind(perf, SCDD.perf, SCDD.perf, scIGANs.perf,
-#             magic.perf, saver.perf, dca.perf,
-#             DeepImpute.perf, DrImpute.perf, scGNN.perf,
-#             ALRA.perf, scVI.perf, VIPER.perf)
-# rownames(pf) <- c('Raw', 'SCDD', 'Diffusion', 'scIGANs', 'MAGIC', 'SAVER',
-#             'DCA', 'DeepImpute', 'DrImpute', 'scGNN', 'ALRA', 'scVI', 'VIPER')
-# write.table(pf, "temp/Li_perfs1.tsv", sep='\t')
+raw.perf <- Li.cstcomp(raw.cst)
+SCDD.perf <- Li.cstcomp(SCDD.cst)
+Diffusion.perf <- Li.cstcomp(Diffusion.cst)
+scIGANs.perf <- Li.cstcomp(scIGANs.cst)
+magic.perf <- Li.cstcomp(magic.cst)
+saver.perf <- Li.cstcomp(saver.cst)
+dca.perf <- Li.cstcomp(dca.cst)
+DeepImpute.perf <- Li.cstcomp(DeepImpute.cst)
+DrImpute.perf <- Li.cstcomp(DrImpute.cst)
+scGNN.perf <- Li.cstcomp(scGNN.cst)
+ALRA.perf <- Li.cstcomp(ALRA.cst)
+scVI.perf <- Li.cstcomp(scVI.cst)
+VIPER.perf <- Li.cstcomp(VIPER.cst)
+scTSSR.perf <- Li.cstcomp(scTSSR.cst)
+EnImpute.perf <- Li.cstcomp(EnImpute.cst)
+
+perf <- data.frame(raw.perf)
+pf <- rbind(perf, SCDD.perf, SCDD.perf, scIGANs.perf,
+            magic.perf, saver.perf, dca.perf,
+            DeepImpute.perf, DrImpute.perf, scGNN.perf,
+            ALRA.perf, scVI.perf, VIPER.perf, scTSSR.perf, EnImpute.perf)
+rownames(pf) <- c('Raw', 'SCDD', 'Diffusion', 'scIGANs', 'MAGIC', 'SAVER',
+            'DCA', 'DeepImpute', 'DrImpute', 'scGNN', 'ALRA', 'scVI', 'VIPER', 'scTSSR', 'EnImpute')
+write.table(pf, "temp/Li_perfs2.tsv", sep='\t')

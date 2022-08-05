@@ -126,6 +126,8 @@ scGNN.path <- paste0("results/scGNN/sc_dropseq_scGNN_impute.tsv")
 ALRA.path <- paste0("results/ALRA/sc_dropseq_ALRA_impute.tsv")
 VIPER.path <- paste0("results/VIPER/sc_dropseq_VIPER_impute.tsv")
 scVI.path <- paste0("results/scVI/sc_dropseq_scVI_impute.tsv")
+scTSSR.path <- paste0("results/scTSSR/sc_dropseq_scTSSR_impute.tsv")
+EnImpute.path <- paste0("results/EnImpute/sc_dropseq_EnImpute_impute.tsv")
 
 # run Seurat's umap and visualization
 raw.st <- sc_dropseq.st(raw.path)
@@ -141,6 +143,8 @@ scGNN.st <- sc_dropseq.st(scGNN.path)
 ALRA.st <- sc_dropseq.st(ALRA.path)
 scVI.st <- sc_dropseq.st(scVI.path)
 VIPER.st <- sc_dropseq.st(VIPER.path)
+scTSSR.st <- sc_dropseq.st(scTSSR.path, has.name = T)
+EnImpute.st <- sc_dropseq.st(EnImpute.path, has.name = T)
 
 raw.umap <- sc_dropseq.umap(raw.st, "Raw")
 SCDD.umap <- sc_dropseq.umap(SCDD.st, "SCDD")
@@ -155,19 +159,23 @@ scGNN.umap <- sc_dropseq.umap(scGNN.st, "scGNN")
 ALRA.umap <- sc_dropseq.umap(ALRA.st, "ALRA")
 scVI.umap <- sc_dropseq.umap(scVI.st, "scVI")
 VIPER.umap <- sc_dropseq.umap(VIPER.st, "VIPER")
+scTSSR.umap <- sc_dropseq.umap(scTSSR.st, "scTSSR")
+EnImpute.umap <- sc_dropseq.umap(EnImpute.st, "EnImpute")
 
-svg("paper/sc_dropseq/sc_dropseq_umap31.svg", 6.5, 2.4)
-ggarrange(raw.umap, SCDD.umap, Diffusion.umap, 
+
+plt <- ggarrange(raw.umap, SCDD.umap, Diffusion.umap,
           ncol = 3, nrow = 1, common.legend=T, legend="none")
+ggsave("paper/sc_dropseq/sc_dropseq_umap41.eps", plot = plt, width = 6.5, height = 2.4, dpi = 400)
 dev.off()
 
-svg("paper/sc_dropseq/sc_dropseq_umap32.svg", 10, 4.6)
-ggarrange(saver.umap, DeepImpute.umap, DrImpute.umap, scIGANs.umap, VIPER.umap,
-          scGNN.umap, magic.umap, dca.umap, ALRA.umap, scVI.umap,
-          ncol = 5, nrow = 2, common.legend=T, legend="bottom")
+
+plt <- ggarrange(saver.umap, DeepImpute.umap, DrImpute.umap, scIGANs.umap, VIPER.umap,
+          scGNN.umap, magic.umap, dca.umap, ALRA.umap, scVI.umap, scTSSR.umap, EnImpute.umap,
+          ncol = 6, nrow = 2, common.legend=T, legend="bottom")
+ggsave("paper/sc_dropseq/sc_dropseq_umap42.eps", plot = plt, width = 12, height = 4.6, dpi = 400)
 dev.off()
 
-# 
+#
 # # run Seurat's cluster and save the Idents
 # raw.cst <- sc_dropseq.cst(raw.path)
 # SCDD.cst <- sc_dropseq.cst(SCDD.path)
@@ -181,14 +189,14 @@ dev.off()
 # ALRA.cst <- sc_dropseq.cst(ALRA.path)
 # scVI.cst <- sc_dropseq.cst(scVI.path)
 # VIPER.cst <- sc_dropseq.cst(VIPER.path)
-# 
+#
 # predicts <- data.frame(as.numeric(as.factor(label[,1])),
 #                  Idents(raw.cst), Idents(SCDD.cst), Idents(Diffusion.cst),
 #                  Idents(magic.cst), Idents(saver.cst), Idents(dca.cst),
 #                  Idents(DeepImpute.cst), Idents(DrImpute.cst), Idents(scGNN.cst),
 #                  Idents(ALRA.cst), Idents(scVI.cst), Idents(VIPER.cst))
 # write.table(predicts, file='temp/sc_dropseq_predicts1.tsv', sep='\t')
-# 
+#
 # # Visualization of clusters
 # raw.cluster <- sc_dropseq.cluster(raw.cst, "Raw")
 # SCDD.cluster <- sc_dropseq.cluster(SCDD.cst, "SCDD")
@@ -202,14 +210,14 @@ dev.off()
 # ALRA.cluster <- sc_dropseq.cluster(ALRA.cst, "ALRA")
 # scVI.cluster <- sc_dropseq.cluster(scVI.cst, "scVI")
 # VIPER.cluster <- sc_dropseq.cluster(VIPER.cst, "VIPER")
-# 
+#
 # svg("paper/sc_dropseq/sc_dropseq_cluster1.svg", 12, 12)
 # ggarrange(raw.cluster, SCDD.cluster, Diffusion.cluster, magic.cluster,
 #              saver.cluster, dca.cluster, DeepImpute.cluster, DrImpute.cluster,
 #               scGNN.cluster, ALRA.cluster, scVI.cluster,
 #               VIPER.cluster, ncol = 3, nrow = 4, common.legend=T, legend="none")
 # dev.off()
-# 
+#
 # # Competitions among methods
 # raw.perf <- sc_dropseq.cstcomp(raw.cst)
 # SCDD.perf <- sc_dropseq.cstcomp(SCDD.cst)
@@ -223,7 +231,7 @@ dev.off()
 # ALRA.perf <- sc_dropseq.cstcomp(ALRA.cst)
 # scVI.perf <- sc_dropseq.cstcomp(scVI.cst)
 # VIPER.perf <- sc_dropseq.cstcomp(VIPER.cst)
-# 
+#
 # perf <- data.frame(raw.perf)
 # pf <- rbind(perf, SCDD.perf, Diffusion.perf,
 #             magic.perf, saver.perf, dca.perf,

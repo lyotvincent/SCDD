@@ -126,6 +126,8 @@ scGNN.path <- paste0("results/scGNN/CIDR_scGNN_impute.tsv")
 ALRA.path <- paste0("results/ALRA/CIDR_ALRA_impute.tsv")
 VIPER.path <- paste0("results/VIPER/CIDR_VIPER_impute.tsv")
 scVI.path <- paste0("results/scVI/CIDR_scVI_impute.tsv")
+scTSSR.path <- paste0("results/scTSSR/CIDR_scTSSR_impute.tsv")
+EnImpute.path <- paste0("results/EnImpute/CIDR_EnImpute_impute.tsv")
 
 # run Seurat's umap and visualization
 raw.st <- CIDR.st(raw.path)
@@ -141,6 +143,8 @@ scGNN.st <- CIDR.st(scGNN.path)
 ALRA.st <- CIDR.st(ALRA.path)
 scVI.st <- CIDR.st(scVI.path)
 VIPER.st <- CIDR.st(VIPER.path)
+scTSSR.st <- CIDR.st(scTSSR.path, has.name = T)
+EnImpute.st <- CIDR.st(EnImpute.path, has.name = T)
 
 raw.umap <- CIDR.umap(raw.st, "Raw")
 SCDD.umap <- CIDR.umap(SCDD.st, "SCDD")
@@ -155,16 +159,18 @@ scGNN.umap <- CIDR.umap(scGNN.st, "scGNN")
 ALRA.umap <- CIDR.umap(ALRA.st, "ALRA")
 scVI.umap <- CIDR.umap(scVI.st, "scVI")
 VIPER.umap <- CIDR.umap(VIPER.st, "VIPER")
+scTSSR.umap <- CIDR.umap(scTSSR.st, "scTSSR")
+EnImpute.umap <- CIDR.umap(EnImpute.st, "EnImpute")
 
-svg("paper/CIDR/CIDR_umap31.svg", 6.5, 2.4)
-ggarrange(raw.umap, SCDD.umap, Diffusion.umap, 
-          ncol = 3, nrow = 1, common.legend=T, legend="none")
+plt <- ggarrange(raw.umap, SCDD.umap, Diffusion.umap, 
+                 ncol = 3, nrow = 1, common.legend=T, legend="none")
+ggsave("paper/CIDR/CIDR_umap41.eps", plot = plt, width = 6.5, height = 2.4, dpi = 400)
 dev.off()
 
-svg("paper/CIDR/CIDR_umap32.svg", 10, 4.6)
-ggarrange(saver.umap, DeepImpute.umap, DrImpute.umap, scIGANs.umap, VIPER.umap,
-          scGNN.umap, magic.umap, dca.umap, ALRA.umap, scVI.umap,
-          ncol = 5, nrow = 2, common.legend=T, legend="bottom")
+plt <- ggarrange(saver.umap, DeepImpute.umap, DrImpute.umap, scIGANs.umap, VIPER.umap,
+                 scGNN.umap, magic.umap, dca.umap, ALRA.umap, scVI.umap, scTSSR.umap, EnImpute.umap,
+                 ncol = 6, nrow = 2, common.legend=T, legend="bottom")
+ggsave("paper/CIDR/CIDR_umap42.eps", plot = plt, width = 12, height = 4.6, dpi = 400)
 dev.off()
 
 # run Seurat's cluster and save the Idents

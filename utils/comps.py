@@ -268,8 +268,30 @@ def imputeByscGNN(expName, dataPath, labelPath=None, format="tsv", id=0):
 
 # EnImpute
 def imputeByEnImpute(expName, dataPath, labelPath=None, format="tsv"):
-    modelName = "scImpute"
+    modelName = "EnImpute"
     X, y = LoadData(expName, dataPath, labelPath=labelPath)
+    # EnImpute support specific versions of software for imputation
+    # We currently support ALRA, MAGIC, DrImpute, SAVER, scImpute and scRMD.
+    result = robjects.r('''
+        library(EnImpute)
+        raw <- read.table("%s", header=TRUE, sep="\t")
+        rownames(raw) <- raw[,1]
+        raw <- raw[, -1]
+        py_config()
+        result <- EnImpute(raw, 
+                        ALRA = T, 
+                        DCA = F, 
+                        MAGIC = T, 
+                        DrImpute = T, 
+                        SAVER = T, 
+                        scImpute = T, 
+                        scRMD = T, 
+                        Seurat = F)
+        return (result)
+        ''' % (dataPath))
+    result = np.array(result)
+    SaveData(expName, modelName, result, needTrans=False)
+    print("write EnImpute successfully!")
 
 
 # ALRA

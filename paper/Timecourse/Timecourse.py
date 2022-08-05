@@ -37,10 +37,13 @@ s_dataPath = ['data/Timecourse.raw.tsv',
             'results/scGNN/Timecourse_scGNN_impute.tsv',
             'results/MAGIC/Timecourse_MAGIC_impute.tsv',
             'results/ALRA/Timecourse_ALRA_impute.tsv',
-            'results/SCRABBLE/Timecourse_SCRABBLE_impute.tsv']
+            'results/SCRABBLE/Timecourse_SCRABBLE_impute.tsv',
+            'results/scTSSR/Timecourse_scTSSR_impute.tsv',
+            'results/EnImpute/Timecourse_EnImpute_impute.tsv']
 
 s_mtName = ['Raw', 'SCDD', 'SCDD(Diffusion)', 'scImpute', 'scIGANs', 'VIPER',
-          'SAVER', 'DCA', 'scVI', 'DrImpute', 'DeepImpute', 'scGNN', 'MAGIC', 'ALRA', 'SCRABBLE']
+          'SAVER', 'DCA', 'scVI', 'DrImpute', 'DeepImpute', 'scGNN', 'MAGIC', 'ALRA', 'SCRABBLE',
+            'scTSSR', 'EnImpute']
 
 labelPath = 'data/Timecourse.label.txt'
 label = np.array(pd.read_csv(labelPath, header=None))
@@ -129,44 +132,44 @@ def generate_figures(dataPath, label, mtName, layouts, axs, type="paga", gene=No
 
 
 # # plot for paga
-figa, axsa = plt.subplots(1, 3, figsize=(6,2),constrained_layout=True)
-generate_figures(s_dataPath[:3], label, s_mtName[:3], (1, 3), axsa, type="paga")
-figa.savefig("paper/Timecourse/Timecourse_paga31.svg")
+figa, axsa = plt.subplots(1, 2, figsize=(4,2),constrained_layout=True)
+generate_figures(s_dataPath[:2], label, s_mtName[:2], (1, 2), axsa, type="paga")
+figa.savefig("paper/Timecourse/Timecourse_paga51.eps", dpi = 400)
 #
 figa, axsa = plt.subplots(3, 5, figsize=(10,6),constrained_layout=True)
-generate_figures(s_dataPath, label, s_mtName, (3, 5), axsa, type="paga")
-figa.savefig("paper/Timecourse/Timecourse_paga4.svg")
+generate_figures(s_dataPath[2:], label, s_mtName[2:], (3, 5), axsa, type="paga")
+figa.savefig("paper/Timecourse/Timecourse_paga52.eps", dpi=400)
 #
-# fige, axse = plt.subplots(1, 3, figsize=(9,3),constrained_layout=True)
-# generate_figures(s_dataPath[:3], label, s_mtName[:3], (1, 3), axse, type="umap")
-# fige.savefig("paper/Timecourse/Timecourse_umap31.svg")
+fige, axse = plt.subplots(1, 2, figsize=(6,3),constrained_layout=True)
+generate_figures(s_dataPath[:2], label, s_mtName[:2], (1, 2), axse, type="umap")
+fige.savefig("paper/Timecourse/Timecourse_umap51.eps", dpi=400)
+#
+fige, axse = plt.subplots(3, 5, figsize=(15,9),constrained_layout=True)
+generate_figures(s_dataPath[2:], label, s_mtName[2:], (3, 5), axse, type="umap")
+fige.savefig("paper/Timecourse/Timecourse_umap52.eps", dpi=400)
+#
+# # plot for violins. marker genes: `NANOG`, `SOX2`, `CER1`
+fige, axse = plt.subplots(1, 2, figsize=(6,3),constrained_layout=True)
+generate_figures(s_dataPath[:2], label, s_mtName[:2], (1, 2), axse, type="violin", gene="NANOG")
+fige.savefig("paper/Timecourse/Timecourse_NANOG51.eps", dpi=400)
 # #
-# fige, axse = plt.subplots(3, 5, figsize=(15,9),constrained_layout=True)
-# generate_figures(s_dataPath, label, s_mtName, (3, 5), axse, type="umap")
-# fige.savefig("paper/Timecourse/Timecourse_umap4.svg")
+fige, axse = plt.subplots(3, 5, figsize=(15,9),constrained_layout=True)
+generate_figures(s_dataPath[2:], label, s_mtName[2:], (3, 5), axse, type="violin", gene="NANOG")
+fige.savefig("paper/Timecourse/Timecourse_NANOG52.eps", dpi=400)
 # #
-# # # plot for violins. marker genes: `NANOG`, `SOX2`, `CER1`
-# fige, axse = plt.subplots(1, 3, figsize=(9,3),constrained_layout=True)
-# generate_figures(s_dataPath[:3], label, s_mtName[:3], (1, 3), axse, type="violin", gene="NANOG")
-# fige.savefig("paper/Timecourse/Timecourse_NANOG31.svg")
-# # #
-# fige, axse = plt.subplots(3, 5, figsize=(15,9),constrained_layout=True)
-# generate_figures(s_dataPath, label, s_mtName, (3, 5), axse, type="violin", gene="NANOG")
-# fige.savefig("paper/Timecourse/Timecourse_NANOG4.svg")
-# # #
-# fige, axse = plt.subplots(1, 3, figsize=(9,3),constrained_layout=True)
-# generate_figures(s_dataPath[:3], label, s_mtName[:3], (1, 3), axse, type="violin", gene="SOX2")
-# fige.savefig("paper/Timecourse/Timecourse_SOX231.svg")
-# # #
-# fige, axse = plt.subplots(3, 5, figsize=(15,9),constrained_layout=True)
-# generate_figures(s_dataPath, label, s_mtName, (3, 5), axse, type="violin", gene="SOX2")
-# fige.savefig("paper/Timecourse/Timecourse_SOX24.svg")
+fige, axse = plt.subplots(1, 2, figsize=(6,3),constrained_layout=True)
+generate_figures(s_dataPath[:2], label, s_mtName[:2], (1, 2), axse, type="violin", gene="SOX2")
+fige.savefig("paper/Timecourse/Timecourse_SOX251.eps", dpi=400)
 # #
-# fige, axse = plt.subplots(1, 3, figsize=(9,3),constrained_layout=True)
-# generate_figures(s_dataPath[:3], label, s_mtName[:3], (1, 3), axse, type="violin", gene="CER1")
-# fige.savefig("paper/Timecourse/Timecourse_CER131.svg")
-# #
-# fige, axse = plt.subplots(3, 5, figsize=(15,9),constrained_layout=True)
-# generate_figures(s_dataPath, label, s_mtName, (3, 5), axse, type="violin", gene="CER1")
-# fige.savefig("paper/Timecourse/Timecourse_CER14.svg")
+fige, axse = plt.subplots(3, 5, figsize=(15,9),constrained_layout=True)
+generate_figures(s_dataPath[2:], label, s_mtName[2:], (3, 5), axse, type="violin", gene="SOX2")
+fige.savefig("paper/Timecourse/Timecourse_SOX252.eps", dpi=400)
+#
+fige, axse = plt.subplots(1, 2, figsize=(6,3),constrained_layout=True)
+generate_figures(s_dataPath[:2], label, s_mtName[:2], (1, 2), axse, type="violin", gene="CER1")
+fige.savefig("paper/Timecourse/Timecourse_CER151.eps", dpi=400)
+#
+fige, axse = plt.subplots(3, 5, figsize=(15,9),constrained_layout=True)
+generate_figures(s_dataPath[2:], label, s_mtName[2:], (3, 5), axse, type="violin", gene="CER1")
+fige.savefig("paper/Timecourse/Timecourse_CER152.eps", dpi=400)
 

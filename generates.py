@@ -84,10 +84,10 @@ def Generate_Li(has_results=False):
         RunComps(expName, dataPath, labelPath)
     os.system("Rscript paper/Li/Li.R")
     predicts = pd.read_csv("temp/Li_predicts1.tsv", sep='\t')
-    perfs = pd.read_csv("temp/Li_perfs1.tsv", sep='\t')
+    perfs = pd.read_csv("temp/Li_perfs2.tsv", sep='\t')
     mcounts = len(perfs) - 1
     perfs = cal_purity(perfs, predicts, mcounts)
-    perfs.to_csv("paper/Li/Li_perfs1.tsv", sep='\t')
+    perfs.to_csv("paper/Li/Li_perfs2.tsv", sep='\t')
     print("Generate Li OK.")
 
 def Generate_Timecourse(has_results=False):
@@ -200,6 +200,6 @@ def Generate_Bladder(has_results=False):
 
 # Generate_CIDR(has_results=False)
 # Generate_sc_10x(has_results=False)
-Generate_Timecourse(has_results=True)
+Generate_liver(has_results=True)
 # Generate_sc_dropseq(has_results=True)
 # imputeByDCA("immune", "data/TS_immune.h5ad", format='h5ad')
