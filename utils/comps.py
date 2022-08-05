@@ -270,7 +270,7 @@ def imputeByscGNN(expName, dataPath, labelPath=None, format="tsv", id=0):
 def imputeByEnImpute(expName, dataPath, labelPath=None, format="tsv"):
     modelName = "EnImpute"
     X, y = LoadData(expName, dataPath, labelPath=labelPath)
-    # EnImpute support specific versions of software for imputation
+    # EnImpute does not specify the version of its integrated imputation method.
     # We currently support ALRA, MAGIC, DrImpute, SAVER, scImpute and scRMD.
     result = robjects.r('''
         library(EnImpute)
